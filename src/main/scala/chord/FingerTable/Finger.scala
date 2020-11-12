@@ -9,10 +9,11 @@ import org.slf4j.LoggerFactory
   * @param interval
   * @param successor
   */
-class FingerTableEntry(
+class Finger(
     private val startId: Int,
     private val interval: Tuple2[Int, Int],
-    private val successor: Int
+    private val successor: Int,
+    private val node: Node
 ) {
   private val Logger = LoggerFactory.getLogger(this.getClass());
 
@@ -27,6 +28,7 @@ class FingerTableEntry(
   def getStartId(): Int = this.startId;
   def getInterval(): Tuple2[Int, Int] = this.interval;
   def getSuccessor(): Int = this.successor;
+  def getNode(): Node = this.node;
 
   /**
     * Returns true if the `nodeId` is between the start and end of the interval `[start, end)`.
