@@ -1,5 +1,8 @@
 package chord.FingerTable
 
+import java.util.Optional
+
+import akka.actor.ActorRef
 import org.slf4j.LoggerFactory
 
 /**
@@ -7,28 +10,24 @@ import org.slf4j.LoggerFactory
   *
   * @param startId
   * @param interval
-  * @param successor
+  * @param node
   */
 class Finger(
-    private val startId: Int,
-    private val interval: Tuple2[Int, Int],
-    private val successor: Int,
-    private val node: Node
+    var startId: Int,
+    var interval: (Int, Int),
+    private var node: (Int, ActorRef)
 ) {
   private val Logger = LoggerFactory.getLogger(this.getClass());
 
   Logger.debug(
+    s"""
+    Creating new entry for node with params:
+      (startId: ${startId}, interval: [${interval._1}, ${interval._2}), successor: ${node}
     """
-    Creating new entry for Node %d with params:
-      (startId: %d, interval: [%d,%d), successor: %d
-    """
-      .format(startId, interval._1, interval._2, successor)
   )
 
-  def getStartId(): Int = this.startId;
-  def getInterval(): Tuple2[Int, Int] = this.interval;
-  def getSuccessor(): Int = this.successor;
-  def getNode(): Node = this.node;
+  def setNode(newNode: (Int, ActorRef)): Unit = this.node = newNode
+  def getNode(): Optional[(Int, ActorRef)] = Optional.ofNullable(this.node)
 
   /**
     * Returns true if the `nodeId` is between the start and end of the interval `[start, end)`.
