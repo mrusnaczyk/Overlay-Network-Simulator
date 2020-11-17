@@ -5,8 +5,10 @@ import akka.actor.ActorRef
 class FingerTable(nodeId: Int, m: Int) {
   private val fingers: List[Finger] = (0 until m).toList
     .map(k => {
-      val start = nodeId + Math.pow(2, k).toInt
-      val end = (start + Math.pow(2, k).toInt) % Math.pow(2, m).toInt
+      val moduloNum = Math.pow(2, m).toInt
+
+      val start = (nodeId + Math.pow(2, k).toInt) % moduloNum
+      val end = (start + Math.pow(2, k).toInt) % moduloNum
       new Finger(start, (start, end), null)
     })
 
