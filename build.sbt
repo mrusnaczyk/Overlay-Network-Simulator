@@ -10,9 +10,10 @@ val AkkaVersion = "2.6.10"
 lazy val root = (project in file("."))
   .settings(
     name := "OverlayNetworkSimulator",
-    libraryDependencies += scalaTest % Test,
+    libraryDependencies += "org.scalatest" % "scalatest" % "3.0.5" % Test,
+//    libraryDependencies += "com.typesafe.akka" %% "akka-testkit" % AkkaVersion,
     libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3",
     libraryDependencies += "org.slf4j" %  "slf4j-api" % "1.7.30",
     libraryDependencies += "com.typesafe.akka" %% "akka-actor-typed" % AkkaVersion
-  )
+)
 

@@ -57,9 +57,9 @@ class ChordNodeActor extends Actor {
       sender ! 1000
     }
 
-    case FindSuccessorRequest(nodeId) => {
+    case FindSuccessorRequest(nodeId, originatingNodeId, originatingNodeSuccessor) => {
       context.system.log.info("FindSuccessorRequest")
-      sender ! findSuccessor(nodeId)
+      sender ! findSuccessor(nodeId, originatingNodeId, originatingNodeSuccessor)
     }
 
     case FindPredecessorRequest(nodeId) => {
@@ -154,7 +154,11 @@ class ChordNodeActor extends Actor {
 
     // Get and set successor this node
     val firstFinger = fingerTable.finger(0)
-    val successorRequest = refNode ? FindSuccessorRequest(firstFinger.startId)
+    val successorRequest = refNode ? FindSuccessorRequest(
+      firstFinger.startId,
+      this.nodeId,
+      this.fingerTable.finger(0).getNode()
+    )
     val successor = Await.result(successorRequest, 5.seconds).asInstanceOf[(Int, ActorRef)]
 
     context.system.log.info(successor.toString())
@@ -185,7 +189,7 @@ class ChordNodeActor extends Actor {
         context.system.log.info("Not in range")
         fingerTable.updateFingerSuccessor(i,
           Await.result(
-            refNode ? FindSuccessorRequest(finger.startId),
+            refNode ? FindSuccessorRequest(finger.startId, this.nodeId, this.fingerTable.finger(0).getNode()),
             3.seconds
           ).asInstanceOf[(Int, ActorRef)]
         )
@@ -193,7 +197,7 @@ class ChordNodeActor extends Actor {
     }
   }
 
-  private def findSuccessor(targetNodeId: Int): (Int, ActorRef) = {
+  private def findSuccessor(targetNodeId: Int, originatingNode: Int, originatingNodeSuccessor: Optional[(Int, ActorRef)]): (Int, ActorRef) = {
     context.system.log.info(s"findSuccessor${targetNodeId}")
 
     val nPrime = findPredecessor(targetNodeId)
@@ -203,9 +207,11 @@ class ChordNodeActor extends Actor {
 //    context.system.log.info(Await.result(nPrime._2 ? SnapshotRequest, 2.seconds).toString)
 
     // TODO: fix?
-    context.system.log.info(self.toString())
+    context.system.log.info(nPrime.toString())
     if(nPrime._1.equals(nodeId))
-      (nodeId, self)
+      this.fingerTable.finger(0).getNode.get
+    else if (nPrime._1.equals(originatingNode))
+      return originatingNodeSuccessor.get()
     else
       Await.result(nPrime._2 ? GetOwnSuccessorRequest, 1.seconds)
            .asInstanceOf[(Int, ActorRef)]
@@ -214,8 +220,11 @@ class ChordNodeActor extends Actor {
   private def findPredecessor(nodeId: Int): (Int, ActorRef) = {
     context.system.log.info(s"${this.nodeId}.findPredecessor(${nodeId})")
 
-    if(nodeId == this.nodeId)
+    if(nodeId == this.nodeId) {
+      context.system.log.info(s"called findPred on self, returning own predecessor: ${this.predecessor.toString()}")
+//      context.system.log.info(Await.result(this.predecessor._2 ? SnapshotRequest, 2.seconds).toString)
       return this.predecessor
+    }
 
     val correctedNodeId = {
       if(nodeId < 0)

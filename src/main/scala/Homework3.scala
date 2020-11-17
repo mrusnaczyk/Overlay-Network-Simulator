@@ -34,6 +34,18 @@ object Homework3 extends App {
   initResponse = Await.result(initRequest, timeout.duration)
   system.log.info(initResponse.toString)
 
+  val node3 = system.actorOf(Props[ChordNodeActor], "Node3")
+  initRequest = node3 ? InitSelfRequest(6, m, Optional.of(node0))
+  initResponse = Await.result(initRequest, timeout.duration)
+  system.log.info(initResponse.toString)
+
+  val node4 = system.actorOf(Props[ChordNodeActor], "Node4")
+  initRequest = node4 ? InitSelfRequest(4, m, Optional.of(node0))
+  initResponse = Await.result(initRequest, timeout.duration)
+  system.log.info(initResponse.toString)
+
+  Thread.sleep(1000)
+
   var snapshotRequest = node0 ? SnapshotRequest
   var snapshotResponse = Await.result(snapshotRequest, timeout.duration)
   system.log.info(snapshotResponse.toString)
@@ -43,6 +55,14 @@ object Homework3 extends App {
   system.log.info(snapshotResponse.toString)
 
   snapshotRequest = node2 ? SnapshotRequest
+  snapshotResponse = Await.result(snapshotRequest, timeout.duration)
+  system.log.info(snapshotResponse.toString)
+
+  snapshotRequest = node3 ? SnapshotRequest
+  snapshotResponse = Await.result(snapshotRequest, timeout.duration)
+  system.log.info(snapshotResponse.toString)
+
+  snapshotRequest = node4 ? SnapshotRequest
   snapshotResponse = Await.result(snapshotRequest, timeout.duration)
   system.log.info(snapshotResponse.toString)
 
