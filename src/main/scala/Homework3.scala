@@ -1,71 +1,139 @@
-//import chord.Node.Node
-import java.util.{HashMap, Optional}
+import java.io.{BufferedWriter, File, FileWriter}
+import java.security.MessageDigest
+import java.util.Optional
 
 import actors.ChordNodeActor
-import akka.actor.Props
+import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.pattern.ask
 import akka.util.Timeout
+import cats.syntax.either._
+import com.typesafe.config.ConfigFactory
+import data.Movie
+import io.circe.yaml.syntax.AsYaml
 import messages._
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
-import akka.actor.ActorSystem
 
 object Homework3 extends App {
-  println("Homework 3 placeholder")
-  // TODO: move to config
-  val m = 3
-  implicit val timeout = Timeout(10.seconds)
+  val applicationConfig = ConfigFactory.load()
+  val m = applicationConfig.getInt("cs441.OverlayNetwork.m")
+  val snapshotBasePath = applicationConfig.getString("cs441.OverlayNetwork.snapshotBasePath")
+  implicit val timeout: Timeout = Timeout(10.seconds)
 
-  val system: ActorSystem = ActorSystem("TestSystem")
+  println("Running Chord simulation...")
 
-  val node0 = system.actorOf(Props[ChordNodeActor], "Node0")
-  var initRequest = node0 ? InitSelfRequest(0, m, Optional.ofNullable(null))
-  var initResponse = Await.result(initRequest, timeout.duration)
-  system.log.info(initResponse.toString)
+  val system: ActorSystem = ActorSystem("ChordOverlayNetwork")
 
-  val node1 = system.actorOf(Props[ChordNodeActor], "Node1")
-  initRequest = node1 ? InitSelfRequest(1, m, Optional.of(node0))
-  initResponse = Await.result(initRequest, timeout.duration)
-  system.log.info(initResponse.toString)
+  val nodeIds = List(0, 1, 3, 28, 12345, 1837292, 536883259)
+  var nodes = nodeIds.map(
+    id => system.actorOf(Props[ChordNodeActor], s"Node$id")
+  )
 
-  val node2 = system.actorOf(Props[ChordNodeActor], "Node2")
-  initRequest = node2 ? InitSelfRequest(3, m, Optional.of(node0))
-  initResponse = Await.result(initRequest, timeout.duration)
-  system.log.info(initResponse.toString)
+  nodes
+    .zip(nodeIds)
+    .foreach(nodeWithId => {
+      val node = nodeWithId._1
+      val id = nodeWithId._2
 
-  val node3 = system.actorOf(Props[ChordNodeActor], "Node3")
-  initRequest = node3 ? InitSelfRequest(6, m, Optional.of(node0))
-  initResponse = Await.result(initRequest, timeout.duration)
-  system.log.info(initResponse.toString)
+      val refNode = {
+        if (id == 0) Optional.ofNullable(null)
+        else Optional.of(nodes.head)
+      }.asInstanceOf[Optional[ActorRef]]
 
-  val node4 = system.actorOf(Props[ChordNodeActor], "Node4")
-  initRequest = node4 ? InitSelfRequest(4, m, Optional.of(node0))
-  initResponse = Await.result(initRequest, timeout.duration)
-  system.log.info(initResponse.toString)
+      val initRequest = node ? InitSelfRequest(id, m, refNode)
+      val initiatedNode = Await.result(initRequest, timeout.duration)
+      system.log.info(initiatedNode.toString)
+    })
 
   Thread.sleep(1000)
 
-  var snapshotRequest = node0 ? SnapshotRequest
-  var snapshotResponse = Await.result(snapshotRequest, timeout.duration)
-  system.log.info(snapshotResponse.toString)
+  for (node <- nodes) {
+    val snapshot = Await.result(node ? SnapshotRequest, timeout.duration)
+    system.log.info(s"Snapshot: $snapshot")
+  }
 
-  snapshotRequest = node1 ? SnapshotRequest
-  snapshotResponse = Await.result(snapshotRequest, timeout.duration)
-  system.log.info(snapshotResponse.toString)
+  val movies = List(
+    new Movie("TestMovie", 3333, 33.33),
+    new Movie("Spongebob Movie", 2222, 22.2222)
+  )
 
-  snapshotRequest = node2 ? SnapshotRequest
-  snapshotResponse = Await.result(snapshotRequest, timeout.duration)
-  system.log.info(snapshotResponse.toString)
+  for (movie <- movies) {
+    val writeRequest: Unit = makeWriteRequest(movie)
+    system.log.info(writeRequest.toString)
+  }
 
-  snapshotRequest = node3 ? SnapshotRequest
-  snapshotResponse = Await.result(snapshotRequest, timeout.duration)
-  system.log.info(snapshotResponse.toString)
+  system.log.info(s"\tResponse: ${makeReadRequest("TestMovie").toString()}")
+  system.log.info(
+    s"\tResponse: ${makeReadRequest("Spongebob Movie").toString()}"
+  )
 
-  snapshotRequest = node4 ? SnapshotRequest
-  snapshotResponse = Await.result(snapshotRequest, timeout.duration)
-  system.log.info(snapshotResponse.toString)
-
+  generateAndSaveGlobalState(snapshotBasePath, nodes)
   // Shutdown simulation
   system.terminate()
+
+  /** Attempts to find the movie with the given `movieName`. If found, the corresponding `Movie` object is returned.
+    * Otherwise, a special 'Not found' `Movie` object is returned.
+    * @param movieName The title of the movie to find
+    * @return `Movie`
+    */
+  def makeReadRequest(movieName: String) = {
+    val movieTitleHash = hashString(movieName)
+    val movieReadRequest =
+      Await.result(nodes.head ? ReadMovieRequest(movieTitleHash), 2.seconds)
+
+    val movieResult = movieReadRequest match {
+      case Some(m: Movie) => m
+      case None           => new Movie("Movie_Not_Found", 0, 0.0)
+    }
+
+    movieResult
+  }
+
+  /** Sends a request to the ring to save the given movie
+    * @param movie The `Movie` to save
+    */
+  def makeWriteRequest(movie: Movie): Unit = {
+    val movieTitleHash = hashString(movie.title)
+
+    Await.result(nodes.head ? WriteMovieRequest(movieTitleHash, movie), 2.seconds)
+  }
+
+  def generateAndSaveGlobalState(
+      outputPath: String,
+      nodes: List[ActorRef]
+  ): Unit = {
+    val yaml = nodes.zipWithIndex
+      .map(node => {
+        val snapshotText =
+          Await.result(node._1 ? SnapshotRequest, timeout.duration).toString
+        val json = io.circe.jawn.parse(snapshotText).valueOr(throw _)
+        val yaml = json.asYaml.spaces2
+
+        s"""${node._2}:
+           |${yaml}
+           |""".stripMargin
+      })
+      .reduce((acc: String, curr: String) => s"""${acc}
+             |${curr}""".stripMargin)
+
+    system.log.debug(yaml)
+
+    val file = new File(
+      s"${outputPath}/output-${System.currentTimeMillis / 1000}.yaml"
+    )
+    val bw = new BufferedWriter(new FileWriter(file))
+    bw.write(yaml)
+    bw.close()
+  }
+
+  def hashString(value: String) = {
+    // Source: https://stackoverflow.com/questions/5992778/computing-the-md5-hash-of-a-string-in-scala
+    val hash = MessageDigest
+      .getInstance("MD5")
+      .digest(value.getBytes())
+      .map("%02X".format(_))
+      .reduce((acc: String, curr: String) => acc + curr)
+    Integer.parseUnsignedInt(hash.substring(0, 4), 16)
+  }
 }
