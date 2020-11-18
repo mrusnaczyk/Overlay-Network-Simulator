@@ -14,6 +14,7 @@ import messages._
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
+import scala.jdk.CollectionConverters.ListHasAsScala
 
 object Homework3 extends App {
   val applicationConfig = ConfigFactory.load()
@@ -25,7 +26,7 @@ object Homework3 extends App {
 
   val system: ActorSystem = ActorSystem("ChordOverlayNetwork")
 
-  val nodeIds = List(0, 1, 3, 28, 12345, 1837292, 536883259)
+  val nodeIds = applicationConfig.getIntList("cs441.OverlayNetwork.network.nodes").asScala.toList
   var nodes = nodeIds.map(
     id => system.actorOf(Props[ChordNodeActor], s"Node$id")
   )
