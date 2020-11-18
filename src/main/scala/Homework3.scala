@@ -1,6 +1,7 @@
 import java.io.{BufferedWriter, File, FileWriter}
 import java.security.MessageDigest
 import java.util.Optional
+import java.util.stream.Collectors
 
 import actors.ChordNodeActor
 import akka.actor.{ActorRef, ActorSystem, Props}
@@ -54,19 +55,24 @@ object Homework3 extends App {
     system.log.info(s"Snapshot: $snapshot")
   }
 
-  val movies = List(
-    new Movie("TestMovie", 3333, 33.33),
-    new Movie("Spongebob Movie", 2222, 22.2222)
-  )
+  val movies = applicationConfig
+      .getConfigList("cs441.OverlayNetwork.data").stream()
+      .map(movieObj => new Movie(
+          movieObj.getString("title"),
+          movieObj.getInt("year"),
+          movieObj.getDouble("revenue")
+      ))
+      .collect(Collectors.toList[Movie])
+      .asScala.toList
 
   for (movie <- movies) {
     val writeRequest: Unit = makeWriteRequest(movie)
     system.log.info(writeRequest.toString)
   }
 
-  system.log.info(s"\tResponse: ${makeReadRequest("TestMovie").toString()}")
+  system.log.info(s"\tResponse: ${makeReadRequest("Sample movie A").toString()}")
   system.log.info(
-    s"\tResponse: ${makeReadRequest("Spongebob Movie").toString()}"
+    s"\tResponse: ${makeReadRequest("Sample movie C").toString()}"
   )
 
   generateAndSaveGlobalState(snapshotBasePath, nodes)
