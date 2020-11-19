@@ -35,11 +35,15 @@ The `ChordNodeActor` Akka Actor forms the backbone of the simulator, representin
 `ChordNodeActor` maintains the following state about itself:
 
 * `nodeId`: Hashed ID of the node
+
 * `m`: Bit size of the hash function. Used to determine the size of the finger table. Passed in during initialization 
 phase
+
 * `predecessor`: Represents the current node's predecessor. Tuple of `(Int, ActorRef)`, where the `Int` is the predecessor 
 node's ID, and `ActorRef` is a reference to the predecessor node's actor instance.
+
 * `fingerTable`: The node's finger table
+
 * `movies`: Contains the movies stored by this node. A mapping from the hashed movie title (Int) to the `Movie` object.
 
 #### Chord Node Lifecycle
@@ -49,12 +53,17 @@ A chord node goes through a number of stages in its lifecycle.
 Before the node can join a Chord ring, it needs to be initialized with appropriate data.
 After the simulator creates an instance of the `ChordNodeActor`, it sends an `InitSelfRequest` to the node with the 
 following data:
+
 * `nodeId`: `Int` representing the node's hashed ID
+
 * `m`: `Int` representing the bit size of the hash function
+
 * `refNode`: `Optional[ActorRef]` representing the node that this new node will use as a reference for joining the ring
 
 Once it receives the `InitSelfRequest` message, the new node does two things:
+
 * Initialize internal state like `nodeId` and finger table
+
 * Join the ring using the `refNode`
 
 To join the ring, we follow the same algorithm described in the Chord paper. In short:
@@ -71,8 +80,10 @@ the RPC calls for us.
 
 Once the node receives the request, it makes a call to an internal method, `lookupNode(nodeId: Int)`, to determine which 
 node is responsible for this movie. Then, depending on the nodeId, we do one of the following:
+
 * If the node is **equal** to the current node, then we simply create a new mapping from the hashed movie title to the 
 movie object in the `movies` map.
+
 * **Otherwise**, send a `WriteMovieRequest` to the node that is responsible for the file
 
 Then, the result from `WriteMovieRequest` is a boolean (successful/unsuccessful), which we send back to the caller.
@@ -84,7 +95,9 @@ The process for finding movies is nearly identical to inserting them. The analog
 
 Once the node receives the request, it makes a call to an internal method, `lookupNode(nodeId: Int)`, to determine which 
 node is responsible for this movie. Then, depending on the nodeId, we do one of the following:
+
 * If the node is **equal** to the current node, then we send back the corresponding movie from the `movies` map.
+
 * **Otherwise**, send a `ReadMovieRequest` to the node that is responsible for the file.
 
 Then, the result from `ReadMovieRequest` is a `Movie` object. In the event that the requested movie could not be found,
