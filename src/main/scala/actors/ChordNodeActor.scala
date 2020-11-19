@@ -198,6 +198,11 @@ class ChordNodeActor extends Actor {
     Optional.ofNullable(null)
   }
 
+  /**
+    * Joins a Chord ring, using `optionalRefNode` as a reference. If `optionalRefNode` is not a valid and active Node,
+    * this node will be initiated as though it is the only/first node in the ring.
+    * @param optionalRefNode The node to reference when obtaining info about the Chord ring.
+    */
   private def join(optionalRefNode: Optional[ActorRef]): Unit = {
     context.system.log.info("Joining DHT ring...")
 
@@ -213,6 +218,10 @@ class ChordNodeActor extends Actor {
     context.system.log.info(generateSnapshot())
   }
 
+  /**
+    * Initializes the finger table, using `refNode` as a reference to obtain info about the other nodes in the ring.
+    * @param refNode
+    */
   private def initFingerTable(refNode: ActorRef): Unit = {
     context.system.log.info("Initiating finger table...")
     context.system.log.info(
@@ -274,6 +283,13 @@ class ChordNodeActor extends Actor {
     }
   }
 
+  /**
+    * Finds the successor of a given `targetNodeId`, using the algorithm described in the Chord paper.
+    * @param targetNodeId
+    * @param originatingNode
+    * @param originatingNodeSuccessor
+    * @return
+    */
   private def findSuccessor(
       targetNodeId: Int,
       originatingNode: Int,
@@ -286,7 +302,6 @@ class ChordNodeActor extends Actor {
     context.system.log.info(s"nprime in findSuccessor = ${nPrime.toString()}")
     context.system.log.info(s"${nPrime.equals(self)}")
 
-    // TODO: fix?
     context.system.log.info(nPrime.toString())
     if (nPrime._1.equals(nodeId))
       this.fingerTable.finger(0).getNode.get
@@ -298,6 +313,11 @@ class ChordNodeActor extends Actor {
         .asInstanceOf[(Int, ActorRef)]
   }
 
+  /**
+    * Finds the successor of a given `nodeId`, using the algorithm described in the Chord paper.
+    * @param nodeId
+    * @return
+    */
   private def findPredecessor(nodeId: Int): (Int, ActorRef) = {
     context.system.log.info(s"${this.nodeId}.findPredecessor(${nodeId})")
 
@@ -351,6 +371,11 @@ class ChordNodeActor extends Actor {
     nPrime
   }
 
+  /**
+    * Finds the closest preceeding finger of a `targetNodeId`.
+    * @param targetNodeId
+    * @return
+    */
   private def closestPrecedingFinger(targetNodeId: Int): (Int, ActorRef) = {
     context.system.log.info(s"ClosestPrecedingFinger ${m}, ${targetNodeId}")
 
@@ -377,6 +402,9 @@ class ChordNodeActor extends Actor {
     (this.nodeId, self)
   }
 
+  /**
+    * Attempts to update other nodes in the ring, whose fingers may be pointing at this node.
+    */
   private def updateOthers(): Unit = {
     context.system.log.info(s"UpdateOthers in node ${this.nodeId}")
     for (i <- 0 to m - 1) {
@@ -392,6 +420,13 @@ class ChordNodeActor extends Actor {
     }
   }
 
+  /**
+    * Update the finger table of this node, setting the successor of finger `i` to be node `s`.
+    * Then, recursively update preceding nodes' fingers.
+    * @param s New successor node.
+    * @param i `i`th finger to update.
+    * @return
+    */
   private def updateFingerTable(s: (Int, ActorRef), i: Int): Boolean = {
     context.system.log.info(s"UpdateFingerTable finger ${i} in node ${nodeId} with node ${s._1}")
     context.system.log.debug(s._1.toString)
@@ -419,6 +454,15 @@ class ChordNodeActor extends Actor {
     true
   }
 
+  /**
+    * Checks if a int value is inside of a given range.
+    * @param value The integer value to test
+    * @param lowerBound Lower bound of the range
+    * @param upperBound Upper bound of the range
+    * @param includeLowerBound Whether to include the lower bound in the range.
+    * @param includeUpperBound Whether to include the upper bound in the range.
+    * @return
+    */
   private def isInRange(
       value: Int,
       lowerBound: Int,

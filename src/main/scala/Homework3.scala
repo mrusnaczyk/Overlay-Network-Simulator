@@ -106,6 +106,11 @@ object Homework3 extends App {
     Await.result(nodes.head ? WriteMovieRequest(movieTitleHash, movie), 2.seconds)
   }
 
+  /**
+    * Generates the global state for all of the Chord nodes, and outputs it into a file
+    * @param outputPath
+    * @param nodes
+    */
   def generateAndSaveGlobalState(
       outputPath: String,
       nodes: List[ActorRef]
@@ -134,6 +139,11 @@ object Homework3 extends App {
     bw.close()
   }
 
+  /**
+    * Given a string, computes the MD5 hash and returns its Int representation
+    * @param value
+    * @return
+    */
   def hashString(value: String) = {
     // Source: https://stackoverflow.com/questions/5992778/computing-the-md5-hash-of-a-string-in-scala
     val hash = MessageDigest
