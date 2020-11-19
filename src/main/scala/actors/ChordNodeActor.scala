@@ -89,8 +89,6 @@ class ChordNodeActor extends Actor {
     case ReadMovieRequest(hashedMovieTitle) => {
       context.system.log.info(s"[Node ${this.nodeId}] ReadMovieRequest(hashedMovieId = ${hashedMovieTitle})");
 
-      // TODO: check if hash is out of range; if so, throw error
-
       // Lookup the ID of the node that is responsible for the movie
       val ownerNode = lookupNode(hashedMovieTitle).get
 
