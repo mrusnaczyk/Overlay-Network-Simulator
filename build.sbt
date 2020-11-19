@@ -12,10 +12,10 @@ lazy val root = (project in file("."))
     libraryDependencies += "io.circe" %% "circe-generic" % "0.12.3",
     libraryDependencies += "io.circe" %% "circe-parser" % "0.12.3",
     libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.3" % Test,
-    libraryDependencies += "io.circe" %% "circe-yaml" % "0.12.3",
+    libraryDependencies += "io.circe" %% "circe-yaml" % "0.13.1",
     libraryDependencies += "com.typesafe.akka" %% "akka-testkit" % AkkaVersion,
     libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3",
     libraryDependencies += "org.slf4j" %  "slf4j-api" % "1.7.30",
     libraryDependencies += "com.typesafe.akka" %% "akka-actor-typed" % AkkaVersion
-  )
+)
 
