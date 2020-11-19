@@ -204,12 +204,10 @@ class ChordNodeActor extends Actor {
     context.system.log.info("Joining DHT ring...")
 
     if (optionalRefNode.isPresent) {
-      context.system.log.info("present!!")
       initFingerTable(optionalRefNode.get)
       context.system.log.info(generateSnapshot())
       updateOthers()
     } else {
-      context.system.log.info("not present!!")
       for (i <- 0 until m)
         fingerTable.updateFingerSuccessor(i, (this.nodeId, self))
       this.predecessor = (this.nodeId, self)
