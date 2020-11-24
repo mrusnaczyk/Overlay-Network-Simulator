@@ -1,3 +1,3 @@
-package messages
+package chord.messages
 
 case object SnapshotRequest

@@ -1,4 +1,4 @@
-package actors
+package chord.actors
 
 import java.util.Optional
 
@@ -8,7 +8,7 @@ import akka.util.Timeout
 import chord.FingerTable.{Finger, FingerTable}
 import com.typesafe.config.ConfigFactory
 import data.Movie
-import messages._
+import chord.messages._
 
 import scala.collection.mutable
 import scala.concurrent.Await

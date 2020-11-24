@@ -1,4 +1,4 @@
-package messages
+package chord.messages
 
 import akka.actor.ActorRef
 

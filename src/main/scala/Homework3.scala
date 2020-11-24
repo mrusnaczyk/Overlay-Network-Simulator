@@ -3,7 +3,7 @@ import java.security.MessageDigest
 import java.util.Optional
 import java.util.stream.Collectors
 
-import actors.ChordNodeActor
+import chord.actors.ChordNodeActor
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.pattern.ask
 import akka.util.Timeout
@@ -11,7 +11,7 @@ import cats.syntax.either._
 import com.typesafe.config.ConfigFactory
 import data.Movie
 import io.circe.yaml.syntax.AsYaml
-import messages._
+import chord.messages._
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt

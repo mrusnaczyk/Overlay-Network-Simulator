@@ -1,4 +1,4 @@
-package messages
+package chord.messages
 
 /**
   * Represents a request to retrieve movie data.
