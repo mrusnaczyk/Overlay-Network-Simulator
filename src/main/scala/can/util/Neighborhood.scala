@@ -4,8 +4,13 @@ import akka.actor.ActorRef
 
 import scala.collection.mutable.ListBuffer
 
-class NeighborStore {
-  private var neighbors: ListBuffer[ActorRef] = ListBuffer()
+class Neighborhood(initialNeighbors: ActorRef*) {
+  private var neighbors: ListBuffer[ActorRef] = ListBuffer(initialNeighbors)
+
+  /**
+    * Returns the list of `ActorRef` neighbors.
+    */
+  def getNeighbors() = neighbors.toList
 
   /**
     * Adds a neighbor to the `NeighborStore`.
