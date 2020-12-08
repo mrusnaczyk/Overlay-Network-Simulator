@@ -7,15 +7,17 @@ import chord.actors.ChordNodeActor
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.pattern.ask
 import akka.util.Timeout
+import can.util.{DimensionRange, Zone}
 import cats.syntax.either._
 import com.typesafe.config.ConfigFactory
 import data.Movie
 import io.circe.yaml.syntax.AsYaml
 import chord.messages._
+import can.actors.NodeActor
+import can.messages.{InitNodeCommand, ReadMovieCommand, SnapshotCommand}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
-import scala.jdk.CollectionConverters.ListHasAsScala
 
 object Homework3 extends App {
   val applicationConfig = ConfigFactory.load()
@@ -23,7 +25,48 @@ object Homework3 extends App {
   val snapshotBasePath = applicationConfig.getString("cs441.OverlayNetwork.snapshotBasePath")
   implicit val timeout: Timeout = Timeout(10.seconds)
 
-  println("Running Chord simulation...")
+  val system: ActorSystem = ActorSystem("ChordOverlayNetwork")
+  val nodeIds = List(0, 2, 4)
+
+  var nodes = nodeIds.map(
+    nodeId => system.actorOf(Props[NodeActor], s"Node$nodeId")
+  )
+
+  nodes
+    .zip(nodeIds)
+    .foreach(nodeWithId => {
+      val node = nodeWithId._1
+      val id = nodeWithId._2
+
+      val refNode = {
+        if (id == 0) Optional.ofNullable(null)
+        else Optional.of(nodes.head)
+      }.asInstanceOf[Optional[ActorRef]]
+
+      val initRequest = node ? InitNodeCommand(id, refNode, List(
+        new DimensionRange(0, 8),
+        new DimensionRange(0, 8)
+      ))
+      val initiatedNode = Await.result(initRequest, timeout.duration)
+
+      nodes.foreach(item =>
+        system.log.info(
+          Await.result(item ? SnapshotCommand, timeout.duration).toString
+        )
+      )
+
+      system.log.info(initiatedNode.toString)
+    })
+
+  Thread.sleep(1000)
+
+  system.log.info(Await.result(nodes(0) ? ReadMovieCommand(17), 5.seconds).toString())
+  system.terminate()
+
+
+
+
+  /*println("Running Chord simulation...")
 
   val system: ActorSystem = ActorSystem("ChordOverlayNetwork")
 
@@ -152,5 +195,5 @@ object Homework3 extends App {
       .map("%02X".format(_))
       .reduce((acc: String, curr: String) => acc + curr)
     Integer.parseUnsignedInt(hash.substring(0, 4), 16)
-  }
+  }*/
 }

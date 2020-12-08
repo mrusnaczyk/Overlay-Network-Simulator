@@ -2,6 +2,11 @@ package can.messages
 
 import java.util.Optional
 
-import can.actors.Node
+import akka.actor.ActorRef
+import can.util.DimensionRange
 
-case class InitNodeCommand (bootstrapNode: Optional[Node])
+case class InitNodeCommand(
+    id: Int,
+    bootstrapNode: Optional[ActorRef],
+    maxRange: List[DimensionRange]
+)
