@@ -4,6 +4,8 @@ organization     := "edu.uic.cs.441"
 organizationName := "OverlayNetworkSimulator"
 
 val AkkaVersion = "2.6.10"
+//val AkkaManagementVersion = "2.6.10"
+val AkkaHttpVersion = "10.2.1"
 
 lazy val root = (project in file("."))
   .settings(
@@ -17,6 +19,11 @@ lazy val root = (project in file("."))
     libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3",
     libraryDependencies += "org.slf4j" %  "slf4j-api" % "1.7.30",
     libraryDependencies += "com.typesafe.akka" %% "akka-actor-typed" % AkkaVersion,
-    libraryDependencies += "com.typesafe.akka" %% "akka-cluster" % AkkaVersion
+    libraryDependencies += "com.typesafe.akka" %% "akka-cluster-typed" % AkkaVersion,
+    libraryDependencies += "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
+    libraryDependencies += "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion
+
+//    libraryDependencies += "com.lightbend.akka.management" %% "akka-management" % AkkaManagementVersion
+//    libraryDependencies += "com.lightbend.akka.management" %% "akka-management-cluster-http" % AkkaManagementVersion
 )
 

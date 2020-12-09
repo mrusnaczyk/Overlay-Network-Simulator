@@ -5,6 +5,7 @@ import java.util.stream.Collectors
 
 import chord.actors.ChordNodeActor
 import akka.actor.{ActorRef, ActorSystem, Props}
+import akka.cluster.Cluster
 import akka.pattern.ask
 import akka.util.Timeout
 import can.util.{DimensionRange, Zone}
@@ -13,9 +14,8 @@ import com.typesafe.config.ConfigFactory
 import data.Movie
 import io.circe.yaml.syntax.AsYaml
 import chord.messages._
-import can.actors.NodeActor
+import can.actors.{ApiServer, NodeActor}
 import can.messages._
-
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
@@ -23,13 +23,16 @@ import scala.concurrent.duration.DurationInt
 object Homework3 extends App {
   import system.dispatcher
 
-  val applicationConfig = ConfigFactory.load()
+  val applicationConfig = ConfigFactory.load("overlaynetwork.conf")
   val m = applicationConfig.getInt("cs441.OverlayNetwork.m")
   val snapshotBasePath = applicationConfig.getString("cs441.OverlayNetwork.snapshotBasePath")
   implicit val timeout: Timeout = Timeout(10.seconds)
 
   val system: ActorSystem = ActorSystem("ChordOverlayNetwork")
   val nodeIds = List(0, 2, 4, 6)
+
+//  val cluster = Cluster(system)
+//  AkkaManagement(system).start()
 
   var nodes = nodeIds.map(
     nodeId => system.actorOf(Props[NodeActor], s"Node$nodeId")
@@ -55,6 +58,7 @@ object Homework3 extends App {
 //      system.scheduler.scheduleWithFixedDelay(
 //        0.seconds, 250.milliseconds, node, SendHeartbeatCommand
 //      )
+//      cluster.join(node.path.address)
 
       nodes.foreach(item =>
         system.log.info(
@@ -64,12 +68,18 @@ object Homework3 extends App {
 
       system.log.info(initiatedNode.toString)
     })
-
   Thread.sleep(1000)
 
-  system.log.info(Await.result(nodes(0) ? ReadMovieCommand(17), 5.seconds).toString())
-  system.log.info(Await.result(nodes(0) ? ReadMovieCommand(33), 5.seconds).toString())
-  system.terminate()
+  val apiServer = new ApiServer(system, nodes)
+  apiServer.startServer()
+
+
+//  system.log.info(Await.result(nodes(0) ? ReadMovieCommand(17), 5.seconds).toString())
+//  system.log.info(Await.result(nodes(0) ? ReadMovieCommand(33), 5.seconds).toString())
+
+
+
+//  system.terminate()
 
 
 

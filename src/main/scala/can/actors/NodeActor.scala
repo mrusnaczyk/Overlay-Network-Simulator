@@ -11,19 +11,22 @@ import com.typesafe.config.ConfigFactory
 import data.Movie
 import org.slf4j.LoggerFactory
 
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
 class NodeActor extends Actor {
+
   private val LOGGER = LoggerFactory.getLogger(this.getClass);
-  private val APPLICATION_CONFIG = ConfigFactory.load()
+  private val APPLICATION_CONFIG = ConfigFactory.load("overlaynetwork.conf")
   private implicit val timeout = Timeout(2.seconds)
 
   // Number of dimensions
   private var id: Int = -1
   private val d = APPLICATION_CONFIG.getInt("cs441.OverlayNetwork.can.d")
   private var neighborhoods: ArrayBuffer[Neighborhood] = ArrayBuffer()
+  private val movies: mutable.HashMap[List[Int], Movie] = new mutable.HashMap[List[Int], Movie]();
 
   override def receive: Receive = {
     case InitNodeCommand(id, bootstrapNode, maxRange) => {
@@ -31,28 +34,32 @@ class NodeActor extends Actor {
       sender ! true
     }
     case SendHeartbeatCommand => handleSendHeartbeatCommand()
-    case HeartbeatCommand => handleHeartbeatCommand(sender)
-    case JoinCommand      => sender ! handleJoinCommand(sender)
-    case TakeoverCommand  => handleTakeoverCommand()
-    case SnapshotCommand  => sender ! generateSnapshot()
+    case HeartbeatCommand     => handleHeartbeatCommand(sender)
+    case JoinCommand          => sender ! handleJoinCommand(sender)
+    case TakeoverCommand      => handleTakeoverCommand()
+    case SnapshotCommand      => sender ! generateSnapshot()
     case NeighborUpdateCommand(newZones) =>
       handleNeighborUpdateCommand(sender, newZones)
     case RemoveNeighborCommand => handleRemoveNeighborCommand(sender)
     case ReadMovieCommand(hashedMovieTitle) =>
       sender ! handleReadMovieCommand(sender, hashedMovieTitle)
+    case WriteMovieCommand(hashedMovieTitle, movie) =>
+      handleWriteMovieCommand(hashedMovieTitle, movie)
   }
 
   // Akka message handling
 
   private def handleSendHeartbeatCommand() = {
     this.neighborhoods.foreach(neighborhood =>
-      neighborhood.getNeighbors().foreach(neighbor => {
-        // Send HEARTBEAT command to indicate this node is alive
-        neighbor.getNode ! HeartbeatCommand
+      neighborhood
+        .getNeighbors()
+        .foreach(neighbor => {
+          // Send HEARTBEAT command to indicate this node is alive
+          neighbor.getNode ! HeartbeatCommand
 
-        // If no HEARTBEAT has been received from the other node in a set period of time, send a TAKEOVER
+          // If no HEARTBEAT has been received from the other node in a set period of time, send a TAKEOVER
 
-      })
+        })
     )
   }
 
@@ -81,7 +88,9 @@ class NodeActor extends Actor {
       val newNeighborhood = splitResult._1
       val nodesToUpdate = splitResult._2
 
-      nodesToUpdate.foreach(neighbor => neighbor.getNode ! RemoveNeighborCommand)
+      nodesToUpdate.foreach(neighbor =>
+        neighbor.getNode ! RemoveNeighborCommand
+      )
 
       LOGGER.debug(s"[${self.path.name}] New neighborhood: ${newNeighborhood}")
       newNeighborhood
@@ -92,7 +101,11 @@ class NodeActor extends Actor {
     LOGGER.info(s"[${self.path.name}] TAKEOVER")
   }
 
-  private def handleInitNodeCommand(id: Int, bootstrapNode: Optional[ActorRef], maxRange: List[DimensionRange]) = {
+  private def handleInitNodeCommand(
+      id: Int,
+      bootstrapNode: Optional[ActorRef],
+      maxRange: List[DimensionRange]
+  ) = {
     LOGGER.info(s"[${self.path.name}] INIT_NODE")
 
     this.id = id
@@ -138,7 +151,10 @@ class NodeActor extends Actor {
     * @param sender
     * @param newZones
     */
-  private def handleNeighborUpdateCommand(sender: ActorRef, newZones: List[Zone]) = {
+  private def handleNeighborUpdateCommand(
+      sender: ActorRef,
+      newZones: List[Zone]
+  ) = {
     LOGGER.info(
       s"[${self.path.name}] NEIGHBOR_UPDATE from ${sender.path.name} for zone ${newZones}"
     )
@@ -181,7 +197,9 @@ class NodeActor extends Actor {
   }
 
   private def handleReadMovieCommand(sender: ActorRef, hashedMovieTitle: Int) = {
-    LOGGER.info(s"[${self.path.name}] READ_MOVIE_REQUEST from ${sender.path.name} for hashed title ${hashedMovieTitle}")
+    LOGGER.info(
+      s"[${self.path.address}] READ_MOVIE_REQUEST from ${sender.path.address} for hashed title ${hashedMovieTitle}"
+    )
     val movieTitlePoint = hashedMovieTitle.toString
       .split("")
       .grouped(hashedMovieTitle.toString.length / d)
@@ -201,11 +219,13 @@ class NodeActor extends Actor {
         neighborhood.getZone().isPointInZone(movieTitlePoint)
       )
 
-    LOGGER.debug(s"[${self.path.name}] Filtered zones: ${responsibleNeighborhoodInThisNode}")
+    LOGGER.debug(
+      s"[${self.path.name}] Filtered zones: ${responsibleNeighborhoodInThisNode}"
+    )
 
-    // TODO: replace with movie from movie list
     if (responsibleNeighborhoodInThisNode.length > 0)
-      new Movie(s"Inception (From node $id)", 2012, 12.1)
+      this.movies.get(movieTitlePoint).get
+//      new Movie(s"Inception (From node $id)", 2012, 12.1)
     else {
       val neighborsWithDistance = neighborhoods.toList
         // Collect list of all neighbors across all neighborhoods
@@ -236,6 +256,61 @@ class NodeActor extends Actor {
     }
   }
 
+  private def handleWriteMovieCommand(hashedMovieTitle: Int, movie: Movie) = {
+    LOGGER.info(
+      s"[${self.path.name}] WRITE_MOVIE_REQUEST from ${sender.path.name} for hashed title ${hashedMovieTitle}: $movie"
+    )
+    val movieTitlePoint = hashedMovieTitle.toString
+      .split("")
+      .grouped(hashedMovieTitle.toString.length / d)
+      .toList
+      .map(grouping =>
+        grouping
+          .reduce((acc, curr) => acc + curr)
+          .toInt
+      )
+
+    LOGGER.debug(
+      s"[${self.path.name}] Movie title after conversion to point: $movieTitlePoint"
+    )
+
+    val responsibleNeighborhoodInThisNode =
+      neighborhoods.filter(neighborhood =>
+        neighborhood.getZone().isPointInZone(movieTitlePoint)
+      )
+
+    LOGGER.debug(
+      s"[${self.path.name}] Filtered zones: ${responsibleNeighborhoodInThisNode}"
+    )
+
+    if (responsibleNeighborhoodInThisNode.length > 0) {
+      this.movies.put(movieTitlePoint, movie)
+      LOGGER.info(this.movies.toList.toString)
+    } else {
+      val neighborsWithDistance = neighborhoods.toList
+        // Collect list of all neighbors across all neighborhoods
+        .flatMap(neighborhood => neighborhood.getNeighbors)
+        // From that list, get list of all zones across all neighborhoods
+        .flatMap(neighbor => neighbor.getZones.map(zone => (neighbor, zone)))
+        .map(neighboringZone =>
+          (
+            neighboringZone._1,
+            neighboringZone._2.distanceToMidpoint(movieTitlePoint)
+          )
+        )
+
+      LOGGER.info(neighborsWithDistance.toString)
+
+      val closestNeighbor = neighborsWithDistance
+        .minBy(neighborWithDistance => neighborWithDistance._2)
+        ._1
+
+      LOGGER.info(s"Closest neighbor: $closestNeighbor")
+
+      closestNeighbor.getNode ! WriteMovieCommand(hashedMovieTitle, movie)
+    }
+  }
+
   def generateSnapshot() = {
     s"""
       | id = ${id}
@@ -248,7 +323,10 @@ class NodeActor extends Actor {
     * @param neighbor - Neighbor to send announcement to
     * @param newZones - List of zones that this node is now responsible for
     */
-  private def sendNeighborUpdateCommand(neighbor: Neighbor, newZones: List[Zone]) = {
+  private def sendNeighborUpdateCommand(
+      neighbor: Neighbor,
+      newZones: List[Zone]
+  ) = {
     if (self.equals(neighbor.getNode))
       LOGGER.warn(
         "Trying to send NeighborUpdateCommand to self? Something is wrong..."
