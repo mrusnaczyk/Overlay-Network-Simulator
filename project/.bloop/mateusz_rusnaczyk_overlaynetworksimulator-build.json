@@ -20,16 +20,12 @@
             "/Users/mateusz/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/sbt/1.4.1/sbt-1.4.1.jar",
             "/Users/mateusz/.sbt/boot/scala-2.12.12/lib/scala-library.jar",
             "/Users/mateusz/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/ch/epfl/scala/sbt-bloop_2.12_1.0/1.4.5-2-eb51d668/sbt-bloop-1.4.5-2-eb51d668.jar",
-            "/Users/mateusz/Library/Caches/Coursier/v1/https/repo.scala-sbt.org/scalasbt/sbt-plugin-releases/org.jetbrains/sbt-structure-extractor/scala_2.12/sbt_1.0/2018.2.1%2B4-88400d3f/jars/sbt-structure-extractor.jar",
-            "/Users/mateusz/Library/Caches/Coursier/v1/https/repo.scala-sbt.org/scalasbt/sbt-plugin-releases/org.jetbrains/sbt-idea-shell/scala_2.12/sbt_1.0/2018.3/jars/sbt-idea-shell.jar",
-            "/Users/mateusz/Library/Caches/Coursier/v1/https/repo.scala-sbt.org/scalasbt/sbt-plugin-releases/org.jetbrains/sbt-idea-compiler-indices/scala_2.12/sbt_1.0/0.1.3/jars/sbt-idea-compiler-indices.jar",
             "/Users/mateusz/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/main_2.12/1.4.1/main_2.12-1.4.1.jar",
             "/Users/mateusz/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/io_2.12/1.4.0/io_2.12-1.4.0.jar",
             "/Users/mateusz/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/net/java/dev/jna/jna/5.5.0/jna-5.5.0.jar",
             "/Users/mateusz/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/net/java/dev/jna/jna-platform/5.5.0/jna-platform-5.5.0.jar",
             "/Users/mateusz/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/com/google/code/gson/gson/2.7/gson-2.7.jar",
             "/Users/mateusz/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar",
-            "/Users/mateusz/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/io/github/sugakandrey/scala-compiler-indices-protocol_2.12/0.1.1/scala-compiler-indices-protocol_2.12-0.1.1.jar",
             "/Users/mateusz/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/logic_2.12/1.4.1/logic_2.12-1.4.1.jar",
             "/Users/mateusz/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/actions_2.12/1.4.1/actions_2.12-1.4.1.jar",
             "/Users/mateusz/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/main-settings_2.12/1.4.1/main-settings_2.12-1.4.1.jar",
@@ -51,7 +47,6 @@
             "/Users/mateusz/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/compiler-interface/1.4.1/compiler-interface-1.4.1.jar",
             "/Users/mateusz/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/zinc-compile_2.12/1.4.1/zinc-compile_2.12-1.4.1.jar",
             "/Users/mateusz/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/com/swoval/file-tree-views/2.1.4/file-tree-views-2.1.4.jar",
-            "/Users/mateusz/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/io/spray/spray-json_2.12/1.3.4/spray-json_2.12-1.3.4.jar",
             "/Users/mateusz/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/util-relation_2.12/1.4.1/util-relation_2.12-1.4.1.jar",
             "/Users/mateusz/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/completion_2.12/1.4.1/completion_2.12-1.4.1.jar",
             "/Users/mateusz/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/task-system_2.12/1.4.1/task-system_2.12-1.4.1.jar",
@@ -154,8 +149,8 @@
                 "import _root_.sbt._",
                 "import _root_.sbt.Keys._",
                 "import _root_.sbt.nio.Keys._",
-                "import _root_.sbt.ScriptedPlugin.autoImport._, _root_.sbt.plugins.MiniDependencyTreePlugin.autoImport._, _root_.bloop.integrations.sbt.BloopPlugin.autoImport._, _root_.org.jetbrains.sbt.IdeaShellPlugin.autoImport._, _root_.org.jetbrains.sbt.indices.SbtIntellijIndicesPlugin.autoImport._",
-                "import _root_.sbt.plugins.IvyPlugin, _root_.sbt.plugins.JvmPlugin, _root_.sbt.plugins.CorePlugin, _root_.sbt.ScriptedPlugin, _root_.sbt.plugins.SbtPlugin, _root_.sbt.plugins.SemanticdbPlugin, _root_.sbt.plugins.JUnitXmlReportPlugin, _root_.sbt.plugins.Giter8TemplatePlugin, _root_.sbt.plugins.MiniDependencyTreePlugin, _root_.bloop.integrations.sbt.BloopPlugin, _root_.org.jetbrains.sbt.StructurePlugin, _root_.org.jetbrains.sbt.IdeaShellPlugin, _root_.org.jetbrains.sbt.indices.SbtIntellijIndicesPlugin"
+                "import _root_.sbt.ScriptedPlugin.autoImport._, _root_.sbt.plugins.MiniDependencyTreePlugin.autoImport._, _root_.bloop.integrations.sbt.BloopPlugin.autoImport._",
+                "import _root_.sbt.plugins.IvyPlugin, _root_.sbt.plugins.JvmPlugin, _root_.sbt.plugins.CorePlugin, _root_.sbt.ScriptedPlugin, _root_.sbt.plugins.SbtPlugin, _root_.sbt.plugins.SemanticdbPlugin, _root_.sbt.plugins.JUnitXmlReportPlugin, _root_.sbt.plugins.Giter8TemplatePlugin, _root_.sbt.plugins.MiniDependencyTreePlugin, _root_.bloop.integrations.sbt.BloopPlugin"
             ]
         },
         "test": {
@@ -224,62 +219,6 @@
                     ]
                 },
                 {
-                    "organization": "org.jetbrains",
-                    "name": "sbt-structure-extractor",
-                    "version": "2018.2.1+4-88400d3f",
-                    "configurations": "compile",
-                    "artifacts": [
-                        {
-                            "name": "sbt-structure-extractor",
-                            "path": "/Users/mateusz/Library/Caches/Coursier/v1/https/repo.scala-sbt.org/scalasbt/sbt-plugin-releases/org.jetbrains/sbt-structure-extractor/scala_2.12/sbt_1.0/2018.2.1%2B4-88400d3f/jars/sbt-structure-extractor.jar"
-                        }
-                    ]
-                },
-                {
-                    "organization": "org.jetbrains",
-                    "name": "sbt-idea-shell",
-                    "version": "2018.3",
-                    "configurations": "compile",
-                    "artifacts": [
-                        {
-                            "name": "sbt-idea-shell",
-                            "path": "/Users/mateusz/Library/Caches/Coursier/v1/https/repo.scala-sbt.org/scalasbt/sbt-plugin-releases/org.jetbrains/sbt-idea-shell/scala_2.12/sbt_1.0/2018.3/jars/sbt-idea-shell.jar"
-                        },
-                        {
-                            "name": "sbt-idea-shell",
-                            "classifier": "sources",
-                            "path": "/Users/mateusz/Library/Caches/Coursier/v1/https/repo.scala-sbt.org/scalasbt/sbt-plugin-releases/org.jetbrains/sbt-idea-shell/scala_2.12/sbt_1.0/2018.3/srcs/sbt-idea-shell-sources.jar"
-                        },
-                        {
-                            "name": "sbt-idea-shell",
-                            "classifier": "javadoc",
-                            "path": "/Users/mateusz/Library/Caches/Coursier/v1/https/repo.scala-sbt.org/scalasbt/sbt-plugin-releases/org.jetbrains/sbt-idea-shell/scala_2.12/sbt_1.0/2018.3/docs/sbt-idea-shell-javadoc.jar"
-                        }
-                    ]
-                },
-                {
-                    "organization": "org.jetbrains",
-                    "name": "sbt-idea-compiler-indices",
-                    "version": "0.1.3",
-                    "configurations": "compile",
-                    "artifacts": [
-                        {
-                            "name": "sbt-idea-compiler-indices",
-                            "path": "/Users/mateusz/Library/Caches/Coursier/v1/https/repo.scala-sbt.org/scalasbt/sbt-plugin-releases/org.jetbrains/sbt-idea-compiler-indices/scala_2.12/sbt_1.0/0.1.3/jars/sbt-idea-compiler-indices.jar"
-                        },
-                        {
-                            "name": "sbt-idea-compiler-indices",
-                            "classifier": "sources",
-                            "path": "/Users/mateusz/Library/Caches/Coursier/v1/https/repo.scala-sbt.org/scalasbt/sbt-plugin-releases/org.jetbrains/sbt-idea-compiler-indices/scala_2.12/sbt_1.0/0.1.3/srcs/sbt-idea-compiler-indices-sources.jar"
-                        },
-                        {
-                            "name": "sbt-idea-compiler-indices",
-                            "classifier": "javadoc",
-                            "path": "/Users/mateusz/Library/Caches/Coursier/v1/https/repo.scala-sbt.org/scalasbt/sbt-plugin-releases/org.jetbrains/sbt-idea-compiler-indices/scala_2.12/sbt_1.0/0.1.3/docs/sbt-idea-compiler-indices-javadoc.jar"
-                        }
-                    ]
-                },
-                {
                     "organization": "com.google.code.gson",
                     "name": "gson",
                     "version": "2.7",
@@ -304,14 +243,19 @@
                     ]
                 },
                 {
-                    "organization": "io.github.sugakandrey",
-                    "name": "scala-compiler-indices-protocol_2.12",
-                    "version": "0.1.1",
+                    "organization": "org.scala-sbt",
+                    "name": "sbt",
+                    "version": "1.4.1",
                     "configurations": "default",
                     "artifacts": [
                         {
-                            "name": "scala-compiler-indices-protocol_2.12",
-                            "path": "/Users/mateusz/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/io/github/sugakandrey/scala-compiler-indices-protocol_2.12/0.1.1/scala-compiler-indices-protocol_2.12-0.1.1.jar"
+                            "name": "sbt",
+                            "path": "/Users/mateusz/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/sbt/1.4.1/sbt-1.4.1.jar"
+                        },
+                        {
+                            "name": "sbt",
+                            "classifier": "sources",
+                            "path": "/Users/mateusz/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/sbt/1.4.1/sbt-1.4.1-sources.jar"
                         }
                     ]
                 },
@@ -329,35 +273,6 @@
                             "name": "scala-library",
                             "classifier": "sources",
                             "path": "/Users/mateusz/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.12.12/scala-library-2.12.12-sources.jar"
-                        }
-                    ]
-                },
-                {
-                    "organization": "io.spray",
-                    "name": "spray-json_2.12",
-                    "version": "1.3.4",
-                    "configurations": "default",
-                    "artifacts": [
-                        {
-                            "name": "spray-json_2.12",
-                            "path": "/Users/mateusz/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/io/spray/spray-json_2.12/1.3.4/spray-json_2.12-1.3.4.jar"
-                        }
-                    ]
-                },
-                {
-                    "organization": "org.scala-sbt",
-                    "name": "sbt",
-                    "version": "1.4.1",
-                    "configurations": "default",
-                    "artifacts": [
-                        {
-                            "name": "sbt",
-                            "path": "/Users/mateusz/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/sbt/1.4.1/sbt-1.4.1.jar"
-                        },
-                        {
-                            "name": "sbt",
-                            "classifier": "sources",
-                            "path": "/Users/mateusz/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/sbt/1.4.1/sbt-1.4.1-sources.jar"
                         }
                     ]
                 },

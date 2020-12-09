@@ -16,6 +16,7 @@ lazy val root = (project in file("."))
     libraryDependencies += "com.typesafe.akka" %% "akka-testkit" % AkkaVersion,
     libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3",
     libraryDependencies += "org.slf4j" %  "slf4j-api" % "1.7.30",
-    libraryDependencies += "com.typesafe.akka" %% "akka-actor-typed" % AkkaVersion
+    libraryDependencies += "com.typesafe.akka" %% "akka-actor-typed" % AkkaVersion,
+    libraryDependencies += "com.typesafe.akka" %% "akka-cluster" % AkkaVersion
 )
 

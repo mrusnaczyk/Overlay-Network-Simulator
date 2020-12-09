@@ -34,12 +34,11 @@ class Neighborhood(initialNeighbors: List[Neighbor], initialZone: Zone) {
     * Removes a neighbor from the `NeighborStore`.
     * @param neighbor `ActorRef` of the neighbor to remove.
     */
-  def removeNeighbor(neighbor: Neighbor): Unit = {
-    neighbors = neighbors.filter(n => !n.equals(neighbor));
+  def removeNeighbor(neighbor: ActorRef): Unit = {
+    neighbors = neighbors.filter(n => !n.getNode.equals(neighbor));
   }
 
   def getNeighborsOfZone(zone: Zone): List[Neighbor] = {
-//    LOGGER.info(neighbors.toString())
     neighbors.toList
       .filter(potentialNeighbor => {
         val neighborZones = potentialNeighbor.getZones
@@ -49,9 +48,12 @@ class Neighborhood(initialNeighbors: List[Neighbor], initialZone: Zone) {
 
   def updateZone(newZone: Zone) = this.zone = newZone
 
-  def splitNeighborhood(newNeighborhoodNode: ActorRef, thisNode: ActorRef, thisNodeZones: List[Zone]): Neighborhood = {
+  def splitNeighborhood(newNeighborhoodNode: ActorRef, thisNode: ActorRef, thisNodeZones: List[Zone]): (Neighborhood, List[Neighbor]) = {
     val thisNodeAsNeighbor = new Neighbor(thisNode, thisNodeZones);
+
+    // Zone for new neighborhood
     val newZone = zone.split(newNeighborhoodNode);
+    // List of neighbors for new neighborhood
     val newNeighbors = {
       // If this neighborhood has neighbors, pick out the ones that will be the neighbors of the new neighborhood
       if (neighbors.length > 0)
@@ -61,7 +63,17 @@ class Neighborhood(initialNeighbors: List[Neighbor], initialZone: Zone) {
         List(thisNodeAsNeighbor)
     }
 
-    new Neighborhood(newNeighbors, newZone)
+    // This neighborhood's zone is now split, so recalculate neighbors
+    val oldNeighbors = neighbors.toList
+    val thisNodeNeighbors = getNeighborsOfZone(zone)
+    this.neighbors.clear();
+    this.neighbors.addAll(thisNodeNeighbors)
+
+    LOGGER.info(oldNeighbors.toString)
+    LOGGER.info(thisNodeNeighbors.toString)
+
+    // Return new node's neighborhood, as well as neighbors from this neighborhood that need to update neighbors
+    (new Neighborhood(newNeighbors, newZone), oldNeighbors.diff(thisNodeNeighbors))
   }
 
   override def toString: String = {

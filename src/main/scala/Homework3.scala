@@ -14,19 +14,22 @@ import data.Movie
 import io.circe.yaml.syntax.AsYaml
 import chord.messages._
 import can.actors.NodeActor
-import can.messages.{InitNodeCommand, ReadMovieCommand, SnapshotCommand}
+import can.messages._
+
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
 object Homework3 extends App {
+  import system.dispatcher
+
   val applicationConfig = ConfigFactory.load()
   val m = applicationConfig.getInt("cs441.OverlayNetwork.m")
   val snapshotBasePath = applicationConfig.getString("cs441.OverlayNetwork.snapshotBasePath")
   implicit val timeout: Timeout = Timeout(10.seconds)
 
   val system: ActorSystem = ActorSystem("ChordOverlayNetwork")
-  val nodeIds = List(0, 2, 4)
+  val nodeIds = List(0, 2, 4, 6)
 
   var nodes = nodeIds.map(
     nodeId => system.actorOf(Props[NodeActor], s"Node$nodeId")
@@ -48,6 +51,10 @@ object Homework3 extends App {
         new DimensionRange(0, 8)
       ))
       val initiatedNode = Await.result(initRequest, timeout.duration)
+      // TODO: move durations to config
+//      system.scheduler.scheduleWithFixedDelay(
+//        0.seconds, 250.milliseconds, node, SendHeartbeatCommand
+//      )
 
       nodes.foreach(item =>
         system.log.info(
@@ -60,7 +67,7 @@ object Homework3 extends App {
 
   Thread.sleep(1000)
 
-  system.log.info(Await.result(nodes(0) ? ReadMovieCommand(17), 5.seconds).toString())
+//  system.log.info(Await.result(nodes(0) ? ReadMovieCommand(17), 5.seconds).toString())
   system.terminate()
 
 

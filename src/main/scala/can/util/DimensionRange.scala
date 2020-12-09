@@ -4,7 +4,7 @@ import org.slf4j.LoggerFactory
 
 /**
   * Represents a range in a single dimension, as [from, to)
- *
+  *
   * @param from start of the range, inclusive,
   * @param to end of the range, exclusive
   */
@@ -22,6 +22,7 @@ class DimensionRange(var from: Int, var to: Int) {
   }
 
   def abutsOtherRange(other: DimensionRange) = {
+    LOGGER.info(s"$to == ${other.from} || ${other.to} == $from")
     if (this.to == other.from || other.to == this.from)
       true
     else
@@ -34,7 +35,8 @@ class DimensionRange(var from: Int, var to: Int) {
     * @return
     */
   def isWithinRange(otherRange: DimensionRange): Boolean = {
-    if(this.from < otherRange.to)
+    LOGGER.info(s" $from >= ${otherRange.from} && $to <= ${otherRange.to}")
+    if(this.from >= otherRange.from && this.to <= otherRange.to)
       true
     else
       false

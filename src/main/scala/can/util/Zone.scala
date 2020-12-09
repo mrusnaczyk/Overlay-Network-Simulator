@@ -77,13 +77,13 @@ class Zone (var zoneRange: List[DimensionRange], d: Int) {
 
           LOGGER.info(s"Comparing dimension ${index}: \n\t${thisDimensionRange}\n\t ${otherDimensionRange}")
 
-          thisDimensionRange.isWithinRange(otherDimensionRange) && otherDimensionRange.isWithinRange(thisDimensionRange)
+          thisDimensionRange.isWithinRange(otherDimensionRange) || otherDimensionRange.isWithinRange(thisDimensionRange)
         })
 
     val mismatchedDimension = this.zoneRange.zip(otherZoneRange)
-      .find(pair => !pair._1.equals(pair._2)).get
+      .find(pair => !pair._1.isWithinRange(pair._2) && !pair._2.isWithinRange(pair._1)/*!pair._1.equals(pair._2)*/).get
 
-    LOGGER.info(s"mismatchedDimension $mismatchedDimension")
+    LOGGER.info(s"mismatchedDimension $mismatchedDimension | matchDim $numMatchingDimensions | ${mismatchedDimension._1.abutsOtherRange(mismatchedDimension._2)}")
 
     if(numMatchingDimensions == d - 1 && mismatchedDimension._1.abutsOtherRange(mismatchedDimension._2))
       true

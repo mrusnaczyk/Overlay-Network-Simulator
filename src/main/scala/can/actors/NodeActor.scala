@@ -30,51 +30,70 @@ class NodeActor extends Actor {
       handleInitNodeCommand(id, bootstrapNode, maxRange)
       sender ! true
     }
+    case SendHeartbeatCommand => handleSendHeartbeatCommand()
     case HeartbeatCommand => handleHeartbeatCommand(sender)
     case JoinCommand      => sender ! handleJoinCommand(sender)
     case TakeoverCommand  => handleTakeoverCommand()
     case SnapshotCommand  => sender ! generateSnapshot()
     case NeighborUpdateCommand(newZones) =>
       handleNeighborUpdateCommand(sender, newZones)
+    case RemoveNeighborCommand => handleRemoveNeighborCommand(sender)
     case ReadMovieCommand(hashedMovieTitle) =>
       sender ! handleReadMovieCommand(sender, hashedMovieTitle)
   }
 
   // Akka message handling
 
+  private def handleSendHeartbeatCommand() = {
+    this.neighborhoods.foreach(neighborhood =>
+      neighborhood.getNeighbors().foreach(neighbor => {
+        // Send HEARTBEAT command to indicate this node is alive
+        neighbor.getNode ! HeartbeatCommand
+
+        // If no HEARTBEAT has been received from the other node in a set period of time, send a TAKEOVER
+
+      })
+    )
+  }
+
   private def handleHeartbeatCommand(from: ActorRef): Unit = {
-    LOGGER.info(s"[${self.toString}] Received Heartbeat")
+    LOGGER.info(s"[${self.path.name}] HEARTBEAT from ${from.path.name}")
   }
 
   private def handleJoinCommand(sender: ActorRef): Neighborhood = {
-    LOGGER.info(s"[${self.toString}] Received Join from ${sender.toString}")
+    LOGGER.info(s"[${self.path.name}] JOIN from ${sender.path.name}")
     // If we have more than one neighborhood, give one to the new node and don't split
     if (neighborhoods.length > 1) {
       LOGGER.info(
-        s"[${self.toString}] Node has more than zone; giving away zones[1]"
+        s"[${self.path.name}] Node has more than zone; giving away zones[1]"
       )
       neighborhoods.remove(
         1
       ) // TODO: fix neighborhoods to be the correct NeighborStore
     } else {
       LOGGER.info(
-        s"[${self.toString}] Node has only one zone; splitting zones[0]"
+        s"[${self.path.name}] Node has only one zone; splitting zones[0]"
       )
       val thisNodeZones =
         neighborhoods.toList.map(neighborhood => neighborhood.getZone)
-      val newNeighborhood =
+      val splitResult =
         neighborhoods(0).splitNeighborhood(sender, self, thisNodeZones)
-      LOGGER.info(s"[${self.toString}] New neighborhood: ${newNeighborhood}")
+      val newNeighborhood = splitResult._1
+      val nodesToUpdate = splitResult._2
+
+      nodesToUpdate.foreach(neighbor => neighbor.getNode ! RemoveNeighborCommand)
+
+      LOGGER.info(s"[${self.path.name}] New neighborhood: ${newNeighborhood}")
       newNeighborhood
     }
   }
 
   private def handleTakeoverCommand(): Unit = {
-    LOGGER.info(s"[${self.toString}] Received Takeover")
+    LOGGER.info(s"[${self.path.name}] TAKEOVER")
   }
 
   private def handleInitNodeCommand(id: Int, bootstrapNode: Optional[ActorRef], maxRange: List[DimensionRange]) = {
-    LOGGER.info(s"[${self.toString}] Received Init Node")
+    LOGGER.info(s"[${self.path.name}] INIT_NODE")
 
     this.id = id
 
@@ -121,7 +140,7 @@ class NodeActor extends Actor {
     */
   private def handleNeighborUpdateCommand(sender: ActorRef, newZones: List[Zone]) = {
     LOGGER.info(
-      s"[${self}] Received add neighbor from ${sender} for zone ${newZones}"
+      s"[${self.path.name}] NEIGHBOR_UPDATE from ${sender.path.name} for zone ${newZones}"
     )
 
     /* For each neighborhood, try to find a neighbor which is the sender.
@@ -152,6 +171,13 @@ class NodeActor extends Actor {
         }
       })
     })
+  }
+
+  private def handleRemoveNeighborCommand(sender: ActorRef) = {
+    LOGGER.info(s"[${self.path.name}] REMOVE_NEIGHBOR ${sender.path.name}")
+    this.neighborhoods.foreach(neighborhood =>
+      neighborhood.removeNeighbor(sender)
+    )
   }
 
   private def handleReadMovieCommand(sender: ActorRef, hashedMovieTitle: Int) = {
