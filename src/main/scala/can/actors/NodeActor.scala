@@ -19,7 +19,7 @@ import scala.concurrent.duration.DurationInt
 class NodeActor extends Actor {
 
   private val LOGGER = LoggerFactory.getLogger(this.getClass);
-  private val APPLICATION_CONFIG = ConfigFactory.load("overlaynetwork.conf")
+  private val APPLICATION_CONFIG = ConfigFactory.load("application.conf")
   private implicit val timeout = Timeout(2.seconds)
 
   // Number of dimensions

@@ -23,7 +23,7 @@ import scala.concurrent.duration.DurationInt
 object Homework3 extends App {
   import system.dispatcher
 
-  val applicationConfig = ConfigFactory.load("overlaynetwork.conf")
+  val applicationConfig = ConfigFactory.load("application.conf")
   val m = applicationConfig.getInt("cs441.OverlayNetwork.m")
   val snapshotBasePath = applicationConfig.getString("cs441.OverlayNetwork.snapshotBasePath")
   implicit val timeout: Timeout = Timeout(10.seconds)

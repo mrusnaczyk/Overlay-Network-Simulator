@@ -1,15 +1,17 @@
-scalaVersion     := "2.13.3"
-version          := "0.1.0-SNAPSHOT"
-organization     := "edu.uic.cs.441"
-organizationName := "OverlayNetworkSimulator"
+ThisBuild / scalaVersion     := "2.13.3"
+ThisBuild / version          := "0.1.0-SNAPSHOT"
+ThisBuild / organization     := "edu.uic.cs.441"
+ThisBuild / organizationName := "OverlayNetworkSimulator"
 
 val AkkaVersion = "2.6.10"
 //val AkkaManagementVersion = "2.6.10"
 val AkkaHttpVersion = "10.2.1"
 
+
 lazy val root = (project in file("."))
   .settings(
     name := "OverlayNetworkSimulator",
+    libraryDependencies += "org.scala-lang" % "scala-library" % "2.13",
     libraryDependencies += "io.circe" %% "circe-core" % "0.12.3",
     libraryDependencies += "io.circe" %% "circe-generic" % "0.12.3",
     libraryDependencies += "io.circe" %% "circe-parser" % "0.12.3",
@@ -27,3 +29,7 @@ lazy val root = (project in file("."))
 //    libraryDependencies += "com.lightbend.akka.management" %% "akka-management-cluster-http" % AkkaManagementVersion
 )
 
+//assemblyMergeStrategy in assembly := {
+//    case PathList("META-INF", xs @ _*) => MergeStrategy.discard
+//    case x => MergeStrategy.first
+//}

@@ -65,7 +65,7 @@ class ApiServer(actorSystem: ActorSystem, nodes: List[ActorRef]) {
 
     // Start server
     Http()
-      .newServerAt("localhost", 8080) // TODO: move to config
+      .newServerAt("0.0.0.0", 8080) // TODO: move to config
       .bind(route)
   }
 }
