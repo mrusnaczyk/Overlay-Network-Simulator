@@ -67,7 +67,8 @@ object Homework3 extends App {
 
   Thread.sleep(1000)
 
-//  system.log.info(Await.result(nodes(0) ? ReadMovieCommand(17), 5.seconds).toString())
+  system.log.info(Await.result(nodes(0) ? ReadMovieCommand(17), 5.seconds).toString())
+  system.log.info(Await.result(nodes(0) ? ReadMovieCommand(33), 5.seconds).toString())
   system.terminate()
 
 

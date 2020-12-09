@@ -38,7 +38,7 @@ class Zone (var zoneRange: List[DimensionRange], d: Int) {
   def split(newZoneNode: ActorRef): Zone = {
     // Find widest dimension and split along that dimension
     val widestDimension: DimensionRange = zoneRange.maxBy(dimension => dimension.length())
-    println(s"Splitting along ${widestDimension}")
+    LOGGER.debug(s"Splitting along ${widestDimension}")
 
     // Construct new split zone
     val zoneBoundariesForNewZone = zoneRange.map(dimension => {
@@ -75,7 +75,7 @@ class Zone (var zoneRange: List[DimensionRange], d: Int) {
           val thisDimensionRange = dimensionRangePair._1
           val otherDimensionRange = dimensionRangePair._2
 
-          LOGGER.info(s"Comparing dimension ${index}: \n\t${thisDimensionRange}\n\t ${otherDimensionRange}")
+          LOGGER.debug(s"Comparing dimension ${index}: \n\t${thisDimensionRange}\n\t ${otherDimensionRange}")
 
           thisDimensionRange.isWithinRange(otherDimensionRange) || otherDimensionRange.isWithinRange(thisDimensionRange)
         })
@@ -83,7 +83,7 @@ class Zone (var zoneRange: List[DimensionRange], d: Int) {
     val mismatchedDimension = this.zoneRange.zip(otherZoneRange)
       .find(pair => !pair._1.isWithinRange(pair._2) && !pair._2.isWithinRange(pair._1)/*!pair._1.equals(pair._2)*/).get
 
-    LOGGER.info(s"mismatchedDimension $mismatchedDimension | matchDim $numMatchingDimensions | ${mismatchedDimension._1.abutsOtherRange(mismatchedDimension._2)}")
+    LOGGER.debug(s"mismatchedDimension $mismatchedDimension | matchDim $numMatchingDimensions | ${mismatchedDimension._1.abutsOtherRange(mismatchedDimension._2)}")
 
     if(numMatchingDimensions == d - 1 && mismatchedDimension._1.abutsOtherRange(mismatchedDimension._2))
       true
@@ -97,7 +97,7 @@ class Zone (var zoneRange: List[DimensionRange], d: Int) {
       (dimension.from + dimension.to) / 2
     )
 
-    LOGGER.info(s"Calculating distance from point $point to zone midpoint $midpoint")
+    LOGGER.debug(s"Calculating distance from point $point to zone midpoint $midpoint")
 
     Math.sqrt(
       midpoint.zip(point)

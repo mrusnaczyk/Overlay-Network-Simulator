@@ -1,7 +1,7 @@
-ThisBuild / scalaVersion     := "2.13.3"
-ThisBuild / version          := "0.1.0-SNAPSHOT"
-ThisBuild / organization     := "edu.uic.cs.441"
-ThisBuild / organizationName := "OverlayNetworkSimulator"
+scalaVersion     := "2.13.3"
+version          := "0.1.0-SNAPSHOT"
+organization     := "edu.uic.cs.441"
+organizationName := "OverlayNetworkSimulator"
 
 val AkkaVersion = "2.6.10"
 

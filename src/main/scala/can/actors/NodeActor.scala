@@ -83,7 +83,7 @@ class NodeActor extends Actor {
 
       nodesToUpdate.foreach(neighbor => neighbor.getNode ! RemoveNeighborCommand)
 
-      LOGGER.info(s"[${self.path.name}] New neighborhood: ${newNeighborhood}")
+      LOGGER.debug(s"[${self.path.name}] New neighborhood: ${newNeighborhood}")
       newNeighborhood
     }
   }
@@ -181,7 +181,7 @@ class NodeActor extends Actor {
   }
 
   private def handleReadMovieCommand(sender: ActorRef, hashedMovieTitle: Int) = {
-    LOGGER.info("HandleReadMovieRequest")
+    LOGGER.info(s"[${self.path.name}] READ_MOVIE_REQUEST from ${sender.path.name} for hashed title ${hashedMovieTitle}")
     val movieTitlePoint = hashedMovieTitle.toString
       .split("")
       .grouped(hashedMovieTitle.toString.length / d)
@@ -192,8 +192,8 @@ class NodeActor extends Actor {
           .toInt
       )
 
-    LOGGER.info(
-      s"[$self] Movie title after conversion to point: $movieTitlePoint"
+    LOGGER.debug(
+      s"[${self.path.name}] Movie title after conversion to point: $movieTitlePoint"
     )
 
     val responsibleNeighborhoodInThisNode =
@@ -201,7 +201,7 @@ class NodeActor extends Actor {
         neighborhood.getZone().isPointInZone(movieTitlePoint)
       )
 
-    LOGGER.info(s"[$self] Filtered zones: ${responsibleNeighborhoodInThisNode}")
+    LOGGER.debug(s"[${self.path.name}] Filtered zones: ${responsibleNeighborhoodInThisNode}")
 
     // TODO: replace with movie from movie list
     if (responsibleNeighborhoodInThisNode.length > 0)
