@@ -17,12 +17,12 @@ class DimensionRange(var from: Int, var to: Int) {
     * @return True if `point` is in range, false otherwise.
     */
   def isPointInRange(point: Int): Boolean = {
-    LOGGER.info(s"is point $point in range ($from, $to)")
+    LOGGER.debug(s"is point $point in range ($from, $to)")
     (point >= from && point < to)
   }
 
   def abutsOtherRange(other: DimensionRange) = {
-    LOGGER.info(s"$to == ${other.from} || ${other.to} == $from")
+    LOGGER.debug(s"$to == ${other.from} || ${other.to} == $from")
     if (this.to == other.from || other.to == this.from)
       true
     else
@@ -35,7 +35,7 @@ class DimensionRange(var from: Int, var to: Int) {
     * @return
     */
   def isWithinRange(otherRange: DimensionRange): Boolean = {
-    LOGGER.info(s" $from >= ${otherRange.from} && $to <= ${otherRange.to}")
+    LOGGER.debug(s" $from >= ${otherRange.from} && $to <= ${otherRange.to}")
     if(this.from >= otherRange.from && this.to <= otherRange.to)
       true
     else

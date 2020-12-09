@@ -194,7 +194,7 @@
         "platform": {
             "name": "jvm",
             "config": {
-                "home": "/usr/local/Cellar/openjdk/14.0.1/libexec/openjdk.jdk/Contents/Home",
+                "home": "/Library/Java/JavaVirtualMachines/jdk-14.0.2.jdk/Contents/Home",
                 "options": [
                     "-Duser.dir=/Users/mateusz/Code/CS441/mateusz_rusnaczyk_overlaynetworksimulator/project"
                 ]
