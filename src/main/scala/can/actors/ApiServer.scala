@@ -1,6 +1,7 @@
 package can.actors
 
-import akka.actor.{ActorRef, ActorSystem}
+import akka.actor.{Actor, ActorRef, ActorSystem}
+import akka.cluster.Cluster
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.StatusCode
 import akka.http.scaladsl.server.Directives._
@@ -13,12 +14,15 @@ import org.slf4j.LoggerFactory
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
 
-class ApiServer(actorSystem: ActorSystem, nodes: List[ActorRef]) {
+
+class ApiServer(system: ActorSystem) {
   val LOGGER = LoggerFactory.getLogger(this.getClass)
-  implicit val serverSystem: ActorSystem = actorSystem
+  implicit val serverSystem: ActorSystem = system
 
   def startServer() = {
-    implicit val timeout = Timeout(1.seconds)
+    // TODO: make both config
+    implicit val timeout = Timeout(3.seconds)
+    val nodes = List(system.actorSelection("akka://cs441_cancluster@seed:1600/user/Node0"))
 
     val getMovieAction = get {
       parameter("title".as[Int]) { key =>
@@ -40,19 +44,23 @@ class ApiServer(actorSystem: ActorSystem, nodes: List[ActorRef]) {
     }
 
     val createMovieAction = post {
-      parameter(
-        "hashedId".as[Int],
-        "title".as[String],
-        "year".as[Int],
-        "revenue".as[Double]
-      ) { (hashedId, title, year, revenue) =>
-        {
+      parameter("hashedId".as[Int], "title".as[String], "year".as[Int], "revenue".as[Double]) {
+        (hashedId, title, year, revenue) => {
+          LOGGER.info(s"POST /movie?hashedId=$hashedId&title=$title&year=$year&revenue=$revenue")
           val movie = new Movie(title, year, revenue)
-          nodes(0) ! WriteMovieCommand(hashedId, movie)
-          complete(
-            StatusCode.int2StatusCode(201),
-            s"Created $hashedId => $movie"
-          )
+          try {
+            nodes(0) ? WriteMovieCommand(hashedId, movie)
+            complete(
+              StatusCode.int2StatusCode(201),
+              s"Created $hashedId => $movie"
+            )
+          } catch {
+            case e: Exception =>
+              complete(
+                StatusCode.int2StatusCode(500),
+                e.toString
+              )
+          }
         }
       }
     }

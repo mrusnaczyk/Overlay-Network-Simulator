@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory
   * @param from start of the range, inclusive,
   * @param to end of the range, exclusive
   */
-class DimensionRange(var from: Int, var to: Int) {
+class DimensionRange(var from: Int, var to: Int) extends Serializable{
   private val LOGGER = LoggerFactory.getLogger(this.getClass)
 
   /**

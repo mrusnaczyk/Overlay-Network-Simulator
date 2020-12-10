@@ -15,6 +15,7 @@ import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
 class ChordNodeActor extends Actor {
+//  val appConfig = ConfigFactory.load()
   val applicationConfig = ConfigFactory.load()
   implicit val timeout = Timeout(applicationConfig.getInt("cs441.OverlayNetwork.defaultTimeout").seconds)
 

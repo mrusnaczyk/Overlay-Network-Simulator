@@ -6,7 +6,7 @@ package data
   * @param year
   * @param revenue
   */
-class Movie(var title: String, var year: Int, var revenue: Double) {
+class Movie(var title: String, var year: Int, var revenue: Double) extends Serializable{
   /**
     * Returns the serialized Movie data in a easy-to-read format
     * @return

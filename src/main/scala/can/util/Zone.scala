@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory
   * @param zoneRange The range of the zone. One `DimensionRange` object per dimension.
   * @param d Number of dimensions in the space of the simulation.
   */
-class Zone (var zoneRange: List[DimensionRange], d: Int) {
+class Zone (var zoneRange: List[DimensionRange], d: Int) extends Serializable{
   private val LOGGER = LoggerFactory.getLogger(this.getClass)
 
   // Check that the dimension ranges that were passed match the number of dimensions in the simulation

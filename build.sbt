@@ -4,7 +4,7 @@ ThisBuild / organization     := "edu.uic.cs.441"
 ThisBuild / organizationName := "OverlayNetworkSimulator"
 
 val AkkaVersion = "2.6.10"
-//val AkkaManagementVersion = "2.6.10"
+val AkkaManagementVersion = "2.6.10"
 val AkkaHttpVersion = "10.2.1"
 
 
@@ -23,7 +23,11 @@ lazy val root = (project in file("."))
     libraryDependencies += "com.typesafe.akka" %% "akka-actor-typed" % AkkaVersion,
     libraryDependencies += "com.typesafe.akka" %% "akka-cluster-typed" % AkkaVersion,
     libraryDependencies += "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
-    libraryDependencies += "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion
+    libraryDependencies += "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
+//      libraryDependencies ++= Seq(
+//      "com.lightbend.akka.management" %% "akka-management-cluster-bootstrap" % AkkaManagementVersion,
+//      "com.typesafe.akka" %% "akka-discovery" % AkkaVersion
+//    )
 
 //    libraryDependencies += "com.lightbend.akka.management" %% "akka-management" % AkkaManagementVersion
 //    libraryDependencies += "com.lightbend.akka.management" %% "akka-management-cluster-http" % AkkaManagementVersion

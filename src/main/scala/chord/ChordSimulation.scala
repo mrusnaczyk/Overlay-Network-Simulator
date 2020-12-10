@@ -21,6 +21,7 @@ import io.circe.yaml.syntax.AsYaml
 
 class ChordSimulation {
   println("Running Chord simulation...")
+  val appConfig = ConfigFactory.load()
   val applicationConfig = ConfigFactory.load("application.conf")
   val system: ActorSystem = ActorSystem("ChordOverlayNetwork")
   implicit val timeout: Timeout = Timeout(10.seconds)

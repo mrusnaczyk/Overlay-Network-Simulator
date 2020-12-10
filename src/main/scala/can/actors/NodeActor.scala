@@ -19,7 +19,7 @@ import scala.concurrent.duration.DurationInt
 class NodeActor extends Actor {
 
   private val LOGGER = LoggerFactory.getLogger(this.getClass);
-  private val APPLICATION_CONFIG = ConfigFactory.load("application.conf")
+  private val APPLICATION_CONFIG = ConfigFactory.load()
   private implicit val timeout = Timeout(2.seconds)
 
   // Number of dimensions
@@ -29,8 +29,8 @@ class NodeActor extends Actor {
   private val movies: mutable.HashMap[List[Int], Movie] = new mutable.HashMap[List[Int], Movie]();
 
   override def receive: Receive = {
-    case InitNodeCommand(id, bootstrapNode, maxRange) => {
-      handleInitNodeCommand(id, bootstrapNode, maxRange)
+    case InitNodeCommand(id, bootstrapNodeUri, maxRange) => {
+      handleInitNodeCommand(id, bootstrapNodeUri, maxRange)
       sender ! true
     }
     case SendHeartbeatCommand => handleSendHeartbeatCommand()
@@ -103,15 +103,15 @@ class NodeActor extends Actor {
 
   private def handleInitNodeCommand(
       id: Int,
-      bootstrapNode: Optional[ActorRef],
+      bootstrapNodeUri: Optional[String],
       maxRange: List[DimensionRange]
   ) = {
-    LOGGER.info(s"[${self.path.name}] INIT_NODE")
+    LOGGER.info(s"[${self}] INIT_NODE")
 
     this.id = id
 
     // If no bootstrap node is given, then it's assumed that the current node is the first/only node.
-    if (!bootstrapNode.isPresent) {
+    if (!bootstrapNodeUri.isPresent) {
       LOGGER.info("No bootstrap node detected; setting up as first/only node")
 
       neighborhoods.addOne(
@@ -124,10 +124,10 @@ class NodeActor extends Actor {
     // Contact the bootstrap node to get neighborhoods and zones
     else {
       LOGGER.info(s"[${this.id}] Not first node")
-
+      val bootstrapNode = context.system.actorSelection(bootstrapNodeUri.get)
       // Send request to bootstrap node to receive initial zone and neighborhood
       val neighborhood = Await
-        .result(bootstrapNode.get ? JoinCommand, 2.seconds)
+        .result(bootstrapNode ? JoinCommand, 2.seconds)
         .asInstanceOf[Neighborhood]
 
       LOGGER.info(neighborhood.toString)

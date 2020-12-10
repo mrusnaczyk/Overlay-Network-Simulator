@@ -7,6 +7,6 @@ import can.util.DimensionRange
 
 case class InitNodeCommand(
     id: Int,
-    bootstrapNode: Optional[ActorRef],
+    bootstrapNode: Optional[String],
     maxRange: List[DimensionRange]
 )

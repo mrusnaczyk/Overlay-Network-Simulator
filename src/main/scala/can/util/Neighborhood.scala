@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration.DurationInt
 
-class Neighborhood(initialNeighbors: List[Neighbor], initialZone: Zone) {
+class Neighborhood(initialNeighbors: List[Neighbor], initialZone: Zone) extends Serializable{
   private val LOGGER = LoggerFactory.getLogger(this.getClass)
   // TODO: use config
   implicit val timeout = Timeout(2.seconds)
