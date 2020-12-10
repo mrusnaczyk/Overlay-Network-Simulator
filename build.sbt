@@ -33,3 +33,17 @@ lazy val root = (project in file("."))
 //    case PathList("META-INF", xs @ _*) => MergeStrategy.discard
 //    case x => MergeStrategy.first
 //}
+
+
+//lazy val canSim = Project("can-simulation", file("./can"))
+////lazy val tools = project.in(file("./tools"))
+////lazy val client = project.in(file("./client"))
+//
+//lazy val myTestTask = taskKey[Unit]("my test task")
+//
+//myTestTask := {
+//    (canSim / Compile / compile).value
+//}
+//
+//mainClass in (Compile, myTestTask) := Some("can.CanSimulation")
+
