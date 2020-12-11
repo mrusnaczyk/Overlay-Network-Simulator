@@ -1,13 +1,13 @@
-package can.actors
+package chord.actors
 
 import akka.actor.{Actor, ActorRef, ActorSystem}
-import akka.cluster.Cluster
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.StatusCode
 import akka.http.scaladsl.server.Directives._
 import akka.pattern.ask
 import akka.util.Timeout
-import can.messages.{ReadMovieCommand, WriteMovieCommand}
+import can.messages.WriteMovieCommand
+import chord.messages.ReadMovieRequest
 import data.Movie
 import org.slf4j.LoggerFactory
 
@@ -26,20 +26,20 @@ class ApiServer(system: ActorSystem) {
 
     val getMovieAction = get {
       parameter("title".as[Int]) { key =>
-        { // TODO: make movie title String and convert to int here
-          LOGGER.info(s"GET /movie?title=$key")
-          try {
-            val result = Await
-              .result(nodes(0) ? ReadMovieCommand(key), timeout.duration)
-              .asInstanceOf[Movie]
-            complete(StatusCode.int2StatusCode(200), result.toString())
-          } catch {
-            case e: Exception => {
-              LOGGER.error(e.toString)
-              complete(StatusCode.int2StatusCode(400), "Not Found")
-            }
+      { // TODO: make movie title String and convert to int here
+        LOGGER.info(s"GET /movie?title=$key")
+        try {
+          val result = Await
+            .result(nodes(0) ? ReadMovieRequest(key), timeout.duration)
+            .asInstanceOf[Movie]
+          complete(StatusCode.int2StatusCode(200), result.toString())
+        } catch {
+          case e: Exception => {
+            LOGGER.error(e.toString)
+            complete(StatusCode.int2StatusCode(400), "Not Found")
           }
         }
+      }
       }
     }
 

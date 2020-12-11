@@ -7,6 +7,7 @@ import akka.cluster.ClusterEvent._
 import akka.cluster.typed.Cluster
 import akka.cluster.typed.Subscribe
 
+// TODO
 object ClusterListener {
   def apply(): Behavior[ClusterEvent.ClusterDomainEvent] =
     Behaviors.setup { ctx =>
