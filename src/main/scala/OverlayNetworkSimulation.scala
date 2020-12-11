@@ -22,15 +22,12 @@ object OverlayNetworkSimulation extends App {
   println(s"Starting in mode $MODE")
 
   MODE match {
-    case "CAN_USER_NODE"    => startCanUserNode()
     case "CAN_NODE"         => startCanNode()
     case "CHORD_NODE"       => startChordNode()
     case "CAN_SIMULATION"   => startCanSimulation()
     case "CHORD_SIMULATION" => startChordSimulation()
     case _                  => println(s"Error: mode $MODE does not match any valid modes")
   }
-
-  def startCanUserNode() = {}
 
   def startCanNode() = {
     val system = ActorSystem("cs441_cluster") // TODO: config
@@ -93,8 +90,6 @@ object OverlayNetworkSimulation extends App {
     )
 
   }
-
-  def startChordUserNode() = {}
 
   def startChordNode() = {}
 
