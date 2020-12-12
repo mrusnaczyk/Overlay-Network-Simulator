@@ -2,7 +2,7 @@ package chord.actors
 
 import java.util.Optional
 
-import akka.actor.{Actor, ActorRef}
+import akka.actor.{Actor, ActorRef, ActorSelection}
 import akka.pattern.ask
 import akka.util.Timeout
 import chord.FingerTable.{Finger, FingerTable}
@@ -54,7 +54,7 @@ class ChordNodeActor extends Actor {
 
     case GetOwnSuccessorRequest => {
       context.system.log.info(s"[Node ${this.nodeId}] GetOwnSuccessorRequest")
-      sender ! this.fingerTable.finger(0).getNode().get()
+      sender ! this.fingerTable.finger(0).getNode().get
     }
 
     // Performs a lookup to find the node actor that is responsible for the nodeId
@@ -114,18 +114,23 @@ class ChordNodeActor extends Actor {
       context.system.log.info(s"[Node ${this.nodeId}] WriteMovieRequest(hashedMovieId = ${hashedMovieTitle})");
 
       // Lookup the ID of the node that is responsible for the movie
-      val ownerNode = lookupNode(hashedMovieTitle)
+      val ownerNode = lookupNode(hashedMovieTitle).get
+
+      context.system.log.info(s"Responsible node is ${ownerNode.toString()}")
 
       // Attempt to write the movie
       val movieWriteResult = {
-        if (ownerNode.get._1 == this.nodeId) {
+        if (ownerNode._1 == this.nodeId) {
+          context.system.log.info("store in this node")
           this.movies.put(hashedMovieTitle, movie)
+          context.system.log.info(s"${this.movies.toList.toString}")
           true // Write was successful
         } else {
+          context.system.log.info(s"store in ${ownerNode._1}")
           // Attempt to write and pass back the result from the other node
           Await
             .result(
-              ownerNode.get._2 ? WriteMovieRequest(hashedMovieTitle, movie),
+              ownerNode._2 ? WriteMovieRequest(hashedMovieTitle, movie),
               timeout.duration
             )
         }
@@ -144,9 +149,10 @@ class ChordNodeActor extends Actor {
       (0 until m)
         .map((fingerIndex: Int) => {
           val finger = this.fingerTable.finger(fingerIndex)
-          val fingerNodeExists = finger.getNode().isPresent
+//          val fingerNodeExists = finger.getNode().isPresent
+          val fingerNodeExists = !finger.getNode().equals((0, null))
           s"${fingerIndex}: 11"
-          s""""(${finger.startId}, ${finger.interval.toString}, ${if (fingerNodeExists) finger.getNode.get.toString else "N/A"})""""
+          s""""(${finger.startId}, ${finger.interval.toString}, ${if (fingerNodeExists) finger.getNode.toString else "N/A"})""""
         })
         .reduce(
           (acc: String, curr: String) =>
@@ -183,10 +189,10 @@ class ChordNodeActor extends Actor {
     * @param targetNodeId ID of the node to look for
     * @return
     */
-  private def lookupNode(targetNodeId: Int): Optional[(Int, ActorRef)] = {
+  private def lookupNode(targetNodeId: Int): Option[(Int, ActorRef)] = {
     // if targetNodeId is in range (pred.id, this.id], current node is what we're looking for
     if(isInRange(targetNodeId, this.predecessor._1, this.nodeId, false, true)) {
-      return Optional.ofNullable((this.nodeId, self))
+      return Option((this.nodeId, self))
     }
 
     for (fingerIndex <- 0 until m) {
@@ -196,7 +202,8 @@ class ChordNodeActor extends Actor {
         return finger.getNode()
     }
 
-    Optional.ofNullable(null)
+    Option.empty
+    //.empty().asInstanceOf[Option[(Int, ActorRef)]]
   }
 
   /**
@@ -204,11 +211,18 @@ class ChordNodeActor extends Actor {
     * this node will be initiated as though it is the only/first node in the ring.
     * @param optionalRefNode The node to reference when obtaining info about the Chord ring.
     */
-  private def join(optionalRefNode: Optional[ActorRef]): Unit = {
+  private def join(optionalRefNode: Option[String]): Unit = {
     context.system.log.info("Joining DHT ring...")
 
-    if (optionalRefNode.isPresent) {
-      initFingerTable(optionalRefNode.get)
+    if (!optionalRefNode.isEmpty) {
+      val refNode = Await.result(
+        context.system
+          .actorSelection(optionalRefNode.get)
+          .resolveOne(timeout.duration),
+        timeout.duration
+      )
+
+      initFingerTable(refNode)
       context.system.log.info(generateSnapshot())
       updateOthers()
     } else {
@@ -231,6 +245,7 @@ class ChordNodeActor extends Actor {
 
     // Get and set successor this node
     val firstFinger = fingerTable.finger(0)
+
     val successorRequest = refNode ? FindSuccessorRequest(
       firstFinger.startId,
       this.nodeId,
@@ -264,7 +279,7 @@ class ChordNodeActor extends Actor {
         isInRange(finger.startId, this.nodeId, prevFingerNodeId, true, false)
       ) {
         context.system.log.info("In range, updating...")
-        fingerTable.updateFingerSuccessor(i, prevFinger.getNode().get())
+        fingerTable.updateFingerSuccessor(i, prevFinger.getNode().get)
       } else {
         context.system.log.info("Not in range")
         fingerTable.updateFingerSuccessor(
@@ -294,7 +309,7 @@ class ChordNodeActor extends Actor {
   private def findSuccessor(
       targetNodeId: Int,
       originatingNode: Int,
-      originatingNodeSuccessor: Optional[(Int, ActorRef)]
+      originatingNodeSuccessor: Option[(Int, ActorRef)]
   ): (Int, ActorRef) = {
     context.system.log.info(s"findSuccessor${targetNodeId}")
 
@@ -307,7 +322,7 @@ class ChordNodeActor extends Actor {
     if (nPrime._1.equals(nodeId))
       this.fingerTable.finger(0).getNode.get
     else if (nPrime._1.equals(originatingNode))
-      return originatingNodeSuccessor.get()
+      return originatingNodeSuccessor.get
     else
       Await
         .result(nPrime._2 ? GetOwnSuccessorRequest, timeout.duration)
@@ -338,13 +353,13 @@ class ChordNodeActor extends Actor {
     context.system.log.debug(s"nodeId: ${correctedNodeId}, nPrimeId: ${nPrime._1}")
 
     var nPrimeSuccessor = {
-      if (this.fingerTable.finger(0).getNode().get()._1 == nPrime._1)
+      if (this.fingerTable.finger(0).getNode().get._1 == nPrime._1)
         (
-          this.fingerTable.finger(0).getNode().get()._1 + Math.pow(2, m).toInt,
-          this.fingerTable.finger(0).getNode().get()._2
+          this.fingerTable.finger(0).getNode().get._1 + Math.pow(2, m).toInt,
+          this.fingerTable.finger(0).getNode().get._2
         )
       else
-        this.fingerTable.finger(0).getNode().get()
+        this.fingerTable.finger(0).getNode().get
     }
 
     context.system.log.debug("checkrange")
@@ -354,7 +369,7 @@ class ChordNodeActor extends Actor {
 
       if (nPrime._1 == this.nodeId) {
         nPrime = closestPrecedingFinger(correctedNodeId)
-        nPrimeSuccessor = this.fingerTable.finger(0).getNode().get()
+        nPrimeSuccessor = this.fingerTable.finger(0).getNode().get
       } else {
         nPrime = Await
           .result(
@@ -382,7 +397,7 @@ class ChordNodeActor extends Actor {
 
     for (i <- 1 to m) {
       // finger[i].node
-      val fingerNode = fingerTable.finger(m - i).getNode().get()
+      val fingerNode = fingerTable.finger(m - i).getNode().get
       context.system.log.info(fingerNode.toString())
 
       // finger[i].node in (this, targetNodeId)
@@ -432,7 +447,7 @@ class ChordNodeActor extends Actor {
     context.system.log.info(s"UpdateFingerTable finger ${i} in node ${nodeId} with node ${s._1}")
     context.system.log.debug(s._1.toString)
 
-    val finger = fingerTable.finger(i).getNode().get()
+    val finger = fingerTable.finger(i).getNode().get
     val fingerNodeId = {
       if (this.nodeId == finger._1)
         finger._1 + Math.pow(2, m).toInt

@@ -2,6 +2,7 @@ package can.util
 
 import akka.actor.ActorRef
 import akka.util.Timeout
+import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.ArrayBuffer
@@ -9,8 +10,8 @@ import scala.concurrent.duration.DurationInt
 
 class Neighborhood(initialNeighbors: List[Neighbor], initialZone: Zone) extends Serializable{
   private val LOGGER = LoggerFactory.getLogger(this.getClass)
-  // TODO: use config
-  implicit val timeout = Timeout(2.seconds)
+  val applicationConfig = ConfigFactory.load()
+  implicit val timeout = Timeout(applicationConfig.getInt("cs441.OverlayNetwork.defaultTimeout").seconds)
   private var neighbors: ArrayBuffer[Neighbor] = ArrayBuffer.from(initialNeighbors)
   private var zone: Zone = initialZone
 

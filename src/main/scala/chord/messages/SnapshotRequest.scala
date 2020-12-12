@@ -1,3 +1,3 @@
 package chord.messages
 
-case object SnapshotRequest
+case object SnapshotRequest extends Serializable

@@ -1,6 +1,6 @@
 package chord.messages
 
-import java.util.Optional
+import scala.Option
 import akka.actor.ActorRef
 
-case class InitSelfRequest(nodeId: Int, m: Int, refNode: Optional[ActorRef])
+case class InitSelfRequest(nodeId: Int, m: Int, refNode: Option[String])

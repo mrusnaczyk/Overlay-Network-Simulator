@@ -27,7 +27,7 @@ class Finger(
   )
 
   def setNode(newNode: (Int, ActorRef)): Unit = this.node = newNode
-  def getNode(): Optional[(Int, ActorRef)] = Optional.ofNullable(this.node)
+  def getNode(): Option[(Int, ActorRef)] = Option(this.node)
 
   /**
     * Returns true if the `nodeId` is between the start and end of the interval `[start, end)`.

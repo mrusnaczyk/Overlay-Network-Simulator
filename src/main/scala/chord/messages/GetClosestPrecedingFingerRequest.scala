@@ -1,3 +1,3 @@
 package chord.messages
 
-case class GetClosestPrecedingFingerRequest(targetNodeId: Int)
+case class GetClosestPrecedingFingerRequest(targetNodeId: Int) extends Serializable

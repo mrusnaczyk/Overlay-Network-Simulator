@@ -1,3 +1,3 @@
 package chord.messages
 
-case object GetOwnPredecessorRequest
+case object GetOwnPredecessorRequest extends Serializable

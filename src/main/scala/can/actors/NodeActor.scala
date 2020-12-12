@@ -56,9 +56,6 @@ class NodeActor extends Actor {
         .foreach(neighbor => {
           // Send HEARTBEAT command to indicate this node is alive
           neighbor.getNode ! HeartbeatCommand
-
-          // If no HEARTBEAT has been received from the other node in a set period of time, send a TAKEOVER
-
         })
     )
   }
@@ -76,7 +73,7 @@ class NodeActor extends Actor {
       )
       neighborhoods.remove(
         1
-      ) // TODO: fix neighborhoods to be the correct NeighborStore
+      )
     } else {
       LOGGER.info(
         s"[${self.path.name}] Node has only one zone; splitting zones[0]"

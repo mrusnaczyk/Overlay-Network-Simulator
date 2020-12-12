@@ -8,6 +8,8 @@ import akka.http.scaladsl.server.Directives._
 import akka.pattern.ask
 import akka.util.Timeout
 import can.messages.{ReadMovieCommand, WriteMovieCommand}
+import com.typesafe.config.ConfigFactory
+import com.typesafe.sslconfig.util.ConfigLoader
 import data.Movie
 import org.slf4j.LoggerFactory
 
@@ -17,11 +19,11 @@ import scala.concurrent.{Await, Future}
 
 class ApiServer(system: ActorSystem) {
   val LOGGER = LoggerFactory.getLogger(this.getClass)
+  val applicationConfig = ConfigFactory.load()
   implicit val serverSystem: ActorSystem = system
 
   def startServer() = {
-    // TODO: make both config
-    implicit val timeout = Timeout(3.seconds)
+    implicit val timeout = Timeout(applicationConfig.getInt("cs441.OverlayNetwork.defaultTimeout").seconds)
     val nodes = List(system.actorSelection("akka://cs441_cluster@seed:1600/user/Node0"))
 
     val getMovieAction = get {
@@ -73,7 +75,10 @@ class ApiServer(system: ActorSystem) {
 
     // Start server
     Http()
-      .newServerAt("0.0.0.0", 8080) // TODO: move to config
+      .newServerAt(
+        applicationConfig.getString("cs441.OverlayNetwork.api.host"),
+        applicationConfig.getInt("cs441.OverlayNetwork.api.port")
+      )
       .bind(route)
   }
 }

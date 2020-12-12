@@ -1,4 +1,4 @@
-package can.actors
+package chord.actors
 
 import akka.actor.Actor
 import akka.http.scaladsl.Http
@@ -23,7 +23,6 @@ class UserActor extends Actor {
 
   private val LOGGER = LoggerFactory.getLogger(this.getClass);
   private val APPLICATION_CONFIG = ConfigFactory.load("application.conf")
-  //  private implicit val timeout = Timeout(2.seconds)
   implicit val timeout = Timeout(APPLICATION_CONFIG.getInt("cs441.OverlayNetwork.defaultTimeout").seconds)
   private val http = Http(context.system)
   private implicit val executionContext = context.system.dispatcher

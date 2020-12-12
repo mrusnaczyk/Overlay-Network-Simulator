@@ -1,3 +1,3 @@
 package chord.messages
 
-case object GetOwnIdRequest
+case object GetOwnIdRequest extends Serializable
