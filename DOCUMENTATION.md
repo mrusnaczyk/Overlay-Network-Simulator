@@ -40,7 +40,7 @@ and then read from the network.
 Once finished, Ctrl-C will end the simulator and `docker-compose down` will clean up the containers.
 
 The final output of the simulator will be a list of logged statistics. This will include the recorded time to execute each
-operation, as well as the average time for a read and a write
+operation, as well as the average time for a read and a write.
 
 This is an example output for a Chord simulation:
 ````Java
@@ -74,7 +74,17 @@ app_0   | 05:53:40.748 [main] INFO akka.actor.typed.ActorSystem - CHORD Avg Read
 A number of parts comprise the simulator.
 
 ### CanNodeActor
-The `CanNodeActor` Akka actor forms the backbones of the Can, representing one node in the Chord network.
+The `CanNodeActor` Akka actor forms the backbones of the Can, representing one node in a CAN network. Each `CanNodeActor` 
+maintains the following state about itself:
+
+* `nodeId`: Hashed ID of the node
+
+* `d`: Max width of the torus of the network
+
+* `neighborhoods`: List of `Neighborhood`s that define the zones that a node is responsible for. A `Neighborhood` is a 
+wrapper for a `Zone` and its immediate `Neighbors`.
+
+* `movies`: Contains the movies stored by this node. A mapping from the hashed movie title (Int) to the `Movie` object.
 
 ### ChordNodeActor
 The `ChordNodeActor` Akka Actor forms the backbone of the Chord simulator, representing one node in a Chord DHT ring. Each 
@@ -122,7 +132,7 @@ finger table state such that all of the fingers point back to itself.
 #### Using the Can/Chord Nodes to Read/Write Data
 
 ##### ApiServer
-A Akka/HTTP server exposing our Can/Chord network. The API exposes 1 endpoint, `movie` and accepts `GET` and `POST` requests. A 
+An Akka/HTTP server exposing our Can/Chord network. The API exposes 1 endpoint, `movie` and accepts `GET` and `POST` requests. A 
 `POST` request will write a movie to the network, and a `GET` will read a movie. 
 
 ##### UserActor
