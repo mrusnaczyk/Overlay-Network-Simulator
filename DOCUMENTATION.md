@@ -70,6 +70,30 @@ app_0   | 05:53:40.748 [main] INFO akka.actor.typed.ActorSystem - CHORD Avg Writ
 app_0   | 05:53:40.748 [main] INFO akka.actor.typed.ActorSystem - CHORD Avg Read Time: 15 ms
 ```
 
+From a high level, the simulator works by running the `mrusna4/cs441-course-project` image in multiple Docker containers.
+Using the environment variable `MODE`, we can specify whether we want the container to run as a CAN/Chord node or a CAN/Chord
+simulation driver. These are the options for the modes:
+
+- `CAN_NODE`
+
+- `CHORD_NODE`
+
+- `CAN_SIMULATION`
+
+- `CHORD_SIMULATION`
+
+Each container requires the following environment variables to be defined in `docker-compose.yml`:
+- `CLUSTER_PORT`: Port of the seed node
+
+- `CLUSTER_IP`: IP address of the seed node. Here we just pass the container named `seed` 
+
+- `SEED_PORT_1600_TCP_ADDR`: the full address of the seed node 
+
+- `MODE`: One of the modes listed above. Required.
+
+- `NODE_ID`: ID to assign to the node. If run as a simulation, this is ignored.
+
+
 ## Implementation Overview
 A number of parts comprise the simulator.
 
@@ -141,12 +165,18 @@ An Akka Actor representing an end user consuming this movie API we created.
 `UserActor`s accept two types of commands: 
     - `ReadMovie(movieTitle: Int)`
     - `WriteMovie(hashedMovieTitle: Int, movie: Movie)`
+    
+In general, when we make a request in the simulation, we start by sending a `ReadMovie` or `WriteMovie` request to a `UserActor`. The overall flow of 
+requests looks like this:
 
+- **UserActor**: Receive Read/WriteMovie Request; send `GET` or `POST` to `/movie`
+
+- **ApiServer**: Receive `GET`/`POST`; Send a `ReadMovieRequest` or `WriteMovieRequest` to a CAN or Chord node
+
+- **CAN/Chord Node**: Receive Read or Write request; Follows procedure below to determine where the movie belongs or is 
+located at. 
+        
 ##### Adding Movies
-When we want to add a movie, we can send a `WriteMovieRequest` to one of the nodes in the ring. By default, we 
-use Node 0. In `Homework3.scala`, there is a `makeWriteRequest(movie: Movie)` wrapper method we can call to easily make 
-the RPC calls for us.
-
 Once the node receives the request, it makes a call to an internal method, `lookupNode(nodeId: Int)`, to determine which 
 node is responsible for this movie. Then, depending on the nodeId, we do one of the following:
 
@@ -158,10 +188,6 @@ movie object in the `movies` map.
 Then, the result from `WriteMovieRequest` is a boolean (successful/unsuccessful), which we send back to the caller.
 
 ##### Finding Movies
-The process for finding movies is nearly identical to inserting them. The analogous request for this operation is 
-`ReadMovieRequest`, and the corresponding wrapper method in `Homework3.scala` is 
-`makeReadRequest(movieTitleHash: Int): Movie`. 
-
 Once the node receives the request, it makes a call to an internal method, `lookupNode(nodeId: Int)`, to determine which 
 node is responsible for this movie. Then, depending on the nodeId, we do one of the following:
 

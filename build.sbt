@@ -23,31 +23,5 @@ lazy val root = (project in file("."))
     libraryDependencies += "com.typesafe.akka" %% "akka-actor-typed" % AkkaVersion,
     libraryDependencies += "com.typesafe.akka" %% "akka-cluster-typed" % AkkaVersion,
     libraryDependencies += "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
-    libraryDependencies += "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
-//      libraryDependencies ++= Seq(
-//      "com.lightbend.akka.management" %% "akka-management-cluster-bootstrap" % AkkaManagementVersion,
-//      "com.typesafe.akka" %% "akka-discovery" % AkkaVersion
-//    )
-
-//    libraryDependencies += "com.lightbend.akka.management" %% "akka-management" % AkkaManagementVersion
-//    libraryDependencies += "com.lightbend.akka.management" %% "akka-management-cluster-http" % AkkaManagementVersion
+    libraryDependencies += "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion
 )
-
-//assemblyMergeStrategy in assembly := {
-//    case PathList("META-INF", xs @ _*) => MergeStrategy.discard
-//    case x => MergeStrategy.first
-//}
-
-
-//lazy val canSim = Project("can-simulation", file("./can"))
-////lazy val tools = project.in(file("./tools"))
-////lazy val client = project.in(file("./client"))
-//
-//lazy val myTestTask = taskKey[Unit]("my test task")
-//
-//myTestTask := {
-//    (canSim / Compile / compile).value
-//}
-//
-//mainClass in (Compile, myTestTask) := Some("can.CanSimulation")
-
