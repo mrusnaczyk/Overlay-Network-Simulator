@@ -7,8 +7,14 @@ The following tools are needed to run the simulation:
 - SBT
 - Scala
 - Java
+- Docker
+- `docker-compose`
+
+The Docker image for the simulator can be found here: https://hub.docker.com/r/mrusna4/cs441-course-project
+The video demo of the AWS deployment can be found here: https://www.youtube.com/watch?v=WTCnJ-O168U
 
 ### Configuration
+The setting for running a Can or Chord simulation is in `.env`
 The configuration for the simulator is located in the `resources/application.conf` file.
 The following information is available in the config:
 
@@ -23,15 +29,55 @@ The following information is available in the config:
 ### Usage
 To run tests: `sbt clean compile test`
 
-To run simulator: `sbt clean compile run`
+To run simulator: 
+- Set the `TYPE` environment variable in `.env` file to be either CAN or CHORD
+- Run `docker-compose up`
 
 Running the simulator assumes that the config has been appropriately set according to the Configuration section above.
+Once started, the simulation will run and the movies, started in the `cs441.OverlayNetwork.data` config will be written 
+and then read from the network.
+
+Once finished, Ctrl-C will end the simulator and `docker-compose down` will clean up the containers.
+
+The final output of the simulator will be a list of logged statistics. This will include the recorded time to execute each
+operation, as well as the average time for a read and a write
+
+This is an example output for a Chord simulation:
+````Java
+app_0   | 05:41:12.235 [main] INFO akka.actor.typed.ActorSystem - RuntimeStatistic (category = CHORD_WRITE_MOVIE, data = 300, unit = ms)
+app_0   | 05:41:12.235 [main] INFO akka.actor.typed.ActorSystem - RuntimeStatistic (category = CHORD_READ_MOVIE, data = 68, unit = ms)
+app_0   | 05:41:12.235 [main] INFO akka.actor.typed.ActorSystem - RuntimeStatistic (category = CHORD_WRITE_MOVIE, data = 6, unit = ms)
+app_0   | 05:41:12.235 [main] INFO akka.actor.typed.ActorSystem - RuntimeStatistic (category = CHORD_READ_MOVIE, data = 30, unit = ms)
+app_0   | 05:41:12.235 [main] INFO akka.actor.typed.ActorSystem - RuntimeStatistic (category = CHORD_WRITE_MOVIE, data = 10, unit = ms)
+app_0   | 05:41:12.235 [main] INFO akka.actor.typed.ActorSystem - RuntimeStatistic (category = CHORD_READ_MOVIE, data = 33, unit = ms)
+app_0   | 05:41:12.235 [main] INFO akka.actor.typed.ActorSystem - RuntimeStatistic (category = CHORD_WRITE_MOVIE, data = 13, unit = ms)
+app_0   | 05:41:12.235 [main] INFO akka.actor.typed.ActorSystem - RuntimeStatistic (category = CHORD_READ_MOVIE, data = 34, unit = ms)
+app_0   | 05:41:12.235 [main] INFO akka.actor.typed.ActorSystem - CHORD Avg Write Time: 82 ms
+app_0   | 05:41:12.236 [main] INFO akka.actor.typed.ActorSystem - CHORD Avg Read Time: 41 ms
+````
+
+This is an example output for a CAN Simulation:
+```Java
+app_0   | 05:53:40.747 [main] INFO akka.actor.typed.ActorSystem - RuntimeStatistic (category = CHORD_WRITE_MOVIE, data = 351, unit = ms)
+app_0   | 05:53:40.747 [main] INFO akka.actor.typed.ActorSystem - RuntimeStatistic (category = CHORD_READ_MOVIE, data = 29, unit = ms)
+app_0   | 05:53:40.747 [main] INFO akka.actor.typed.ActorSystem - RuntimeStatistic (category = CHORD_WRITE_MOVIE, data = 11, unit = ms)
+app_0   | 05:53:40.747 [main] INFO akka.actor.typed.ActorSystem - RuntimeStatistic (category = CHORD_READ_MOVIE, data = 9, unit = ms)
+app_0   | 05:53:40.747 [main] INFO akka.actor.typed.ActorSystem - RuntimeStatistic (category = CHORD_WRITE_MOVIE, data = 13, unit = ms)
+app_0   | 05:53:40.747 [main] INFO akka.actor.typed.ActorSystem - RuntimeStatistic (category = CHORD_READ_MOVIE, data = 17, unit = ms)
+app_0   | 05:53:40.747 [main] INFO akka.actor.typed.ActorSystem - RuntimeStatistic (category = CHORD_WRITE_MOVIE, data = 6, unit = ms)
+app_0   | 05:53:40.747 [main] INFO akka.actor.typed.ActorSystem - RuntimeStatistic (category = CHORD_READ_MOVIE, data = 7, unit = ms)
+app_0   | 05:53:40.748 [main] INFO akka.actor.typed.ActorSystem - CHORD Avg Write Time: 95 ms
+app_0   | 05:53:40.748 [main] INFO akka.actor.typed.ActorSystem - CHORD Avg Read Time: 15 ms
+```
 
 ## Implementation Overview
 A number of parts comprise the simulator.
 
+### CanNodeActor
+The `CanNodeActor` Akka actor forms the backbones of the Can, representing one node in the Chord network.
+
 ### ChordNodeActor
-The `ChordNodeActor` Akka Actor forms the backbone of the simulator, representing one node in a Chord DHT ring. Each 
+The `ChordNodeActor` Akka Actor forms the backbone of the Chord simulator, representing one node in a Chord DHT ring. Each 
 `ChordNodeActor` maintains the following state about itself:
 
 * `nodeId`: Hashed ID of the node
@@ -72,6 +118,19 @@ To join the ring, we follow the same algorithm described in the Chord paper. In 
 finger table state such that all of the fingers point back to itself.
 
 * If a non-null `refNode` is passed, then the regular algorithm is followed to initialize the finger table.
+
+#### Using the Can/Chord Nodes to Read/Write Data
+
+##### ApiServer
+A Akka/HTTP server exposing our Can/Chord network. The API exposes 1 endpoint, `movie` and accepts `GET` and `POST` requests. A 
+`POST` request will write a movie to the network, and a `GET` will read a movie. 
+
+##### UserActor
+An Akka Actor representing an end user consuming this movie API we created. 
+
+`UserActor`s accept two types of commands: 
+    - `ReadMovie(movieTitle: Int)`
+    - `WriteMovie(hashedMovieTitle: Int, movie: Movie)`
 
 ##### Adding Movies
 When we want to add a movie, we can send a `WriteMovieRequest` to one of the nodes in the ring. By default, we 

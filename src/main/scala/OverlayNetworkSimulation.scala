@@ -131,10 +131,10 @@ object OverlayNetworkSimulation extends App {
       .map(stat => stat.data)
       .sum / canReads.length
 
-    stats.foreach(stat => println(stat.toString))
+    stats.foreach(stat => system.log.info(stat.toString))
 
-    println(s"CAN Avg Write Time: $canWriteAvg ms")
-    println(s"CAN Avg Read Time: $canReadAvg ms")
+    system.log.info(s"CAN Avg Write Time: $canWriteAvg ms")
+    system.log.info(s"CAN Avg Read Time: $canReadAvg ms")
   }
 
   def startChordNode() = {
@@ -198,7 +198,7 @@ object OverlayNetworkSimulation extends App {
       )
     })
 
-    Thread.sleep(5000)
+    Thread.sleep(2000)
 
     val chordWrites = stats
       .filter(stat => stat.category.equals("CHORD_WRITE_MOVIE"))
@@ -214,10 +214,10 @@ object OverlayNetworkSimulation extends App {
       .map(stat => stat.data)
       .sum / chordReads.length
 
-    stats.foreach(stat => println(stat.toString))
+    stats.foreach(stat => system.log.info(stat.toString))
 
-    println(s"CHORD Avg Write Time: $chordWriteAvg ms")
-    println(s"CHORD Avg Read Time: $chordReadAvg ms")
+    system.log.info(s"CHORD Avg Write Time: $chordWriteAvg ms")
+    system.log.info(s"CHORD Avg Read Time: $chordReadAvg ms")
 
   }
 
